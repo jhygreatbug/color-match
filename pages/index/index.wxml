@@ -1,0 +1,5 @@
+<!--index.wxml-->
+<view class="container">
+  <text>连连看</text>
+  <navigator wx:for="{{degreeOfDifficulty}}" url="/pages/game/game?mode={{item}}" hover-class="navigator-hover">{{item}}</navigator>
+</view>
