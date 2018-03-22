@@ -1,0 +1,211 @@
+<style>
+  .game-box-row {
+    display: flex;
+    justify-content: stretch;
+    flex-wrap: nowrap;
+  }
+
+  .game-box-cell {
+    flex: 1;
+    margin: 8rpx;
+    border-radius: 8rpx;
+    background-color: #eee;
+  }
+
+  .game-box-cell::before {
+    display: block;
+    content: attr(data-content);
+    padding-bottom: 100%;
+    height: 0;
+    text-align: center;
+  }
+
+  .game-box-cell-remove {
+    visibility: hidden;
+  }
+
+  .game-box-cell-selected {
+    box-shadow: 0 0 8rpx #026773;
+  }
+
+  .game-box-cell-error {
+    box-shadow: 0 0 8rpx #ff685d;
+  }
+</style>
+
+<template>
+  <view class="game-box">
+      <view wx:for="{{gameMap}}" wx:for-item="row" wx:for-index="i" class="game-box-row">
+        <view wx:for="{{row}}" wx:for-item="cell" class="game-box-cell {{cell.status !== '' ? 'game-box-cell-' + cell.status : ''}}" @tap="tapCell({{cell}})" style="background-color: {{cell.value}}">
+        </view>
+      </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  const RGBMaxValue = 255;
+  const getRandomNumber = num => Math.floor(Math.random() * num);
+  const numberToIntHex = num => {
+    let str = Math.floor(num).toString(16);
+    if (str.length < 2) {
+      str = '0' + str;
+    }
+    return str.slice(0, 2);
+  };
+  const colorPointToHex = p => `#${numberToIntHex(p[0])}${numberToIntHex(p[1])}${numberToIntHex(p[2])}`;
+  function addVector(v1, v2) {
+    return v1.map((item, index) => v1[index] + v2[index]);
+  }
+  function subtractVector(v1, v2) {
+    return v1.map((item, index) => v1[index] - v2[index]);
+  }
+  function divisionVector(v1, num) {
+    return v1.map(item => item / num);
+  }
+  function generateEndPoint(startPoint, len) {
+    const inRange = value => value >= 0 && value <= RGBMaxValue;
+    const angle1 = getRandomNumber(360);
+    const angle2 = getRandomNumber(360);
+    const x = startPoint[1] + len * Math.cos(angle1 * Math.PI / 180);
+    const _len = len * Math.sin(angle1 * Math.PI / 180);
+    const y = _len * Math.cos(angle2 * Math.PI / 180);
+    const z = _len * Math.sin(angle2 * Math.PI / 180);
+    return inRange(x) && inRange(y) && inRange(z) ? [x, y, z] : generateEndPoint(startPoint, len);
+  }
+  function generateColorPoints(count, similar) {
+    const startPoint = [getRandomNumber(RGBMaxValue), getRandomNumber(RGBMaxValue), getRandomNumber(RGBMaxValue)];
+    const endPoint = generateEndPoint(startPoint, similar);
+    const step = divisionVector(subtractVector(endPoint, startPoint), count - 1);
+    const points = [startPoint];
+    for (let i = 1; i < count; i++) {
+      points.unshift(addVector(points[0], step));
+    }
+    return points;
+  }
+  export default class GameCell extends wepy.component {
+    props = {
+      params: Object
+    }
+    data = {
+      gameParams: {},
+      gameMap: [],
+      cellData: {},
+      selectedCellKey: ''
+    }
+    methods = {
+      tapCell: function(cell) {
+        const tapCell = this.gameMap[cell.y][cell.x];
+        const selectedCellKey = this.selectedCellKey;
+        const selectedCellData = selectedCellKey === '' ? null : this.cellData[this.selectedCellKey];
+        const selectedCell = selectedCellKey === '' ? null : this.gameMap[selectedCellData.y][selectedCellData.x];
+        console.log(tapCell, selectedCell, this);
+        if (tapCell.status === 'remove') {
+          if (selectedCellKey !== '') {
+            console.log('cancel select');
+            // 取消选中
+            selectedCell.status = '';
+            this.selectedCellKey = '';
+          }
+        } else if (tapCell.status === 'selected') {
+          console.log('cancel tapcell select');
+          // 取消当前cell选中
+          tapCell.status = '';
+          this.selectedCellKey = '';
+        } else {
+          if (this.selectedCellKey === '') {
+            console.log('select tapcell');
+            // 选中当前cell
+            tapCell.status = 'selected';
+            this.selectedCellKey = tapCell.key;
+          } else {
+            const result = this.matchCouple(tapCell, selectedCell);
+            if (result) {
+              console.log('remove couple');
+              // 移除cell
+              tapCell.status = 'remove';
+              selectedCell.status = 'remove';
+              this.selectedCellKey = '';
+            } else {
+              console.log('cancel select error');
+              // 取消选中
+              selectedCell.status = '';
+              this.selectedCellKey = '';
+            }
+          }
+        }
+      }
+    }
+    onLoad() {
+      this.init();
+    }
+    init() {
+      this.selectedCellKey = '';
+      this.cellData = {};
+      this.gameMap = this.generateGameMap(5, 4);
+    }
+    matchCouple(tapCell, selectedCell) {
+      return tapCell.value === selectedCell.value;
+    }
+    putCellsIntoMap(row, col, values) {
+      const needCount = row * col / 2;
+      let cells = [];
+      while (cells.length < needCount) {
+        cells.push(...values);
+      }
+      cells = cells.slice(0, needCount);
+      cells.push(...cells);
+
+      const map = [];
+      for (let i = 0; i < row; i++) {
+        const row = [];
+        for (let j = 0; j < col; j++) {
+          const index = getRandomNumber(cells.length);
+          const cellObj = this.generateCellObj(j, i, cells[index]);
+          this.cellData[cellObj.key] = cellObj;
+          row.push(cellObj);
+          cells.splice(index, 1);
+        }
+        map.push(row);
+      }
+      return map;
+    }
+    generateGameMap(row, col, type = 'color', myOption = {}) {
+      if ((row * col) % 2 === 1) throw new Error('不允许奇数个方块！');
+      const option = {
+        count: myOption.count || row * col / 2,
+        similar: myOption.similar || 120
+      };
+      if (type === 'color') {
+        const colorPoints = generateColorPoints(option.count, option.similar);
+        const colors = colorPoints.map(item => colorPointToHex(item));
+        console.log(colors);
+        return this.putCellsIntoMap(row, col, colors);
+      }
+      // const map = [];
+      // const valueLen = values.length;
+      // for (let i = 0; i < row; i++) {
+      //   const row = [];
+      //   for (let j = 0; j < col; j++) {
+      //     const value = values[Math.floor(Math.random() * valueLen)];
+      //     const key = `${i}.${j}.${value}`;
+      //     const cell = this.generateCellObj(j, i, key, value);
+      //     this.cellData[key] = cell;
+      //     row.push(cell);
+      //   }
+      //   map.push(row);
+      // }
+      // return map;
+    }
+    generateCellObj(x, y, value) {
+      const obj = {
+        x,
+        y,
+        key: `${x}.${y}.${value}`,
+        value,
+        status: ''
+      };
+      return obj;
+    }
+  }
+</script>

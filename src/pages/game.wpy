@@ -1,0 +1,50 @@
+<style>
+  .game-box-row {
+    display: flex;
+    justify-content: stretch;
+    flex-wrap: nowrap;
+  }
+</style>
+<template>
+  <game-box :params="gameParams"></game-box>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import GameBox from '../components/game-box';
+  export default class Game extends wepy.page {
+    config = {
+      navigationBarTitleText: 'test'
+    }
+    components = {
+      'game-box': GameBox
+    }
+
+    data = {
+      gameParams: {}
+    }
+
+    computed = {
+      now () {
+        return +new Date()
+      }
+    }
+
+    methods = {
+    }
+
+    events = {
+      'game-cell.tap': (data) => {
+      }
+    }
+
+    onLoad() {
+      console.log(this);
+      const params = {};
+      params.difficulty = 'normal';
+      params.row = 4;
+      params.col = 4;
+      this.gameParams = params;
+    }
+  }
+</script>

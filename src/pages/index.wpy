@@ -1,0 +1,39 @@
+<style lang="less">
+</style>
+<template>
+  <view class="container">
+    <text>连连看</text>
+    <navigator wx:for="{{difficulty}}" url="/pages/game?mode={{item}}" hover-class="navigator-hover">{{item}}</navigator>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: 'test'
+    }
+    components = {
+    }
+
+    data = {
+      difficulty: []
+    }
+
+    computed = {
+      now () {
+        return +new Date()
+      }
+    }
+
+    methods = {
+    }
+
+    events = {
+    }
+
+    onLoad() {
+      this.difficulty = this.$parent.globalData.difficulty;
+    }
+  }
+</script>
