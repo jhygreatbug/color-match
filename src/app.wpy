@@ -18,8 +18,9 @@ export default class extends wepy.app {
   config = {
     pages: [
       'pages/index',
-      'pages/game',
-      'pages/demo'
+      'pages/round',
+      'pages/round-game',
+      'pages/debug'
     ],
     window: {
       backgroundTextStyle: 'light',

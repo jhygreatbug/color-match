@@ -6,13 +6,13 @@
   }
 </style>
 <template>
-  <game-box :params="gameParams"></game-box>
+  <game-box :params="gameParams" :row="row" :col="col"></game-box>
 </template>
 
 <script>
   import wepy from 'wepy';
   import GameBox from '../components/game-box';
-  export default class Game extends wepy.page {
+  export default class Debug extends wepy.page {
     config = {
       navigationBarTitleText: 'test'
     }
@@ -21,6 +21,8 @@
     }
 
     data = {
+      row: 5,
+      col: 4,
       gameParams: {}
     }
 

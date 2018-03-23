@@ -1,0 +1,58 @@
+<style>
+</style>
+<template>
+  <view class="game">{{mode}} {{level}}</view>
+  <game-box></game-box>
+  <view>
+    <navigator wx:if="{{prev}}" url="/pages/round-game?mode={{mode}}&level={{prev}}" open-type="redirect">prev</navigator>
+    <text>time</text>
+    <navigator wx:if="{{next}}" url="/pages/round-game?mode={{mode}}&level={{next}}" open-type="redirect">next</navigator>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import Config from '../config/config';
+  import GameBox from '../components/game-box';
+  export default class RoundGame extends wepy.page {
+    config = {
+      navigationBarTitleText: 'color match'
+    }
+    components = {
+      'game-box': GameBox
+    }
+
+    data = {
+      mode: '',
+      level: '',
+      prev: null,
+      next: null
+    }
+
+    computed = {
+    }
+
+    methods = {
+    }
+
+    events = {
+      'game-complete': function () {
+        console.log('event complete');
+        if (this.next) {
+          wepy.redirectTo({url: `/pages/round-game?mode=${this.mode}&level=${this.next}`});
+        } else {
+          wepy.redirectTo({url: `/pages/round?mode=${this.mode}`});
+        }
+      }
+    }
+
+    onLoad(param) {
+      this.mode = param.mode;
+      this.level = param.level;
+      const gameConfig = Config.round[param.mode][param.level];
+      this.prev = gameConfig.prev;
+      this.next = gameConfig.next;
+      this.$invoke('game-box', 'init', gameConfig);
+    }
+  }
+</script>

@@ -1,18 +1,27 @@
 <style>
-  .game-box-row {
+  .game-box-row,
+  .refer-box-row {
     display: flex;
-    justify-content: stretch;
+    justify-content: center;
     flex-wrap: nowrap;
   }
 
-  .game-box-cell {
+  .game-box-cell,
+  .refer-box-cell {
     flex: 1;
     margin: 8rpx;
-    border-radius: 8rpx;
+    max-width: 200rpx;
+    border-radius: 15%;
     background-color: #eee;
   }
 
-  .game-box-cell::before {
+  .refer-box-cell {
+    max-width: 100rpx;
+    min-width: 50rpx;
+  }
+
+  .game-box-cell:before,
+  .refer-box-cell:before {
     display: block;
     content: attr(data-content);
     padding-bottom: 100%;
@@ -21,25 +30,33 @@
   }
 
   .game-box-cell-remove {
-    visibility: hidden;
+    background-color: #f0f0f0 !important;
+    box-shadow: inset 0 0 40rpx rgba(0, 0, 0, .2), inset 0 0 25rpx rgba(0, 0, 0, .1);
   }
 
   .game-box-cell-selected {
-    box-shadow: 0 0 8rpx #026773;
+    box-shadow: 0 0 12rpx rgba(0, 0, 0, .5);
   }
 
   .game-box-cell-error {
-    box-shadow: 0 0 8rpx #ff685d;
+    box-shadow: 0 0 12rpx #ff685d;
   }
 </style>
 
 <template>
   <view class="game-box">
-      <view wx:for="{{gameMap}}" wx:for-item="row" wx:for-index="i" class="game-box-row">
-        <view wx:for="{{row}}" wx:for-item="cell" class="game-box-cell {{cell.status !== '' ? 'game-box-cell-' + cell.status : ''}}" @tap="tapCell({{cell}})" style="background-color: {{cell.value}}">
-        </view>
+    <view wx:for="{{gameMap}}" wx:for-item="row" wx:for-index="i" class="game-box-row">
+      <view wx:for="{{row}}" wx:for-item="cell" wx:key="key" class="game-box-cell {{cell.status !== '' ? 'game-box-cell-' + cell.status : ''}}" @tap="tapCell({{cell}})" style="background-color: {{cell.value}}">
       </view>
+    </view>
   </view>
+
+  <scroll-view scroll-x="true">
+    <view class="refer-box-row">
+      <view wx:for="{{colors}}" class="refer-box-cell" style="background-color: {{item}}">
+      </view>
+    </view>
+  </scroll-view>
 </template>
 
 <script>
@@ -65,12 +82,12 @@
   }
   function generateEndPoint(startPoint, len) {
     const inRange = value => value >= 0 && value <= RGBMaxValue;
-    const angle1 = getRandomNumber(360);
-    const angle2 = getRandomNumber(360);
-    const x = startPoint[1] + len * Math.cos(angle1 * Math.PI / 180);
-    const _len = len * Math.sin(angle1 * Math.PI / 180);
-    const y = _len * Math.cos(angle2 * Math.PI / 180);
-    const z = _len * Math.sin(angle2 * Math.PI / 180);
+    const angle1 = Math.random() * 2 * Math.PI;
+    const angle2 = Math.random() * 2 * Math.PI;
+    const x = startPoint[0] + len * Math.cos(angle1);
+    const _len = len * Math.sin(angle1);
+    const y = startPoint[1] + _len * Math.cos(angle2);
+    const z = startPoint[2] + _len * Math.sin(angle2);
     return inRange(x) && inRange(y) && inRange(z) ? [x, y, z] : generateEndPoint(startPoint, len);
   }
   function generateColorPoints(count, similar) {
@@ -84,70 +101,77 @@
     return points;
   }
   export default class GameCell extends wepy.component {
-    props = {
-      params: Object
-    }
+    props = {}
     data = {
-      gameParams: {},
       gameMap: [],
       cellData: {},
+      colors: [],
+      restCouple: 0,
       selectedCellKey: ''
     }
     methods = {
-      tapCell: function(cell) {
+      tapCell (cell) {
         const tapCell = this.gameMap[cell.y][cell.x];
         const selectedCellKey = this.selectedCellKey;
         const selectedCellData = selectedCellKey === '' ? null : this.cellData[this.selectedCellKey];
         const selectedCell = selectedCellKey === '' ? null : this.gameMap[selectedCellData.y][selectedCellData.x];
-        console.log(tapCell, selectedCell, this);
         if (tapCell.status === 'remove') {
           if (selectedCellKey !== '') {
-            console.log('cancel select');
             // 取消选中
             selectedCell.status = '';
             this.selectedCellKey = '';
           }
         } else if (tapCell.status === 'selected') {
-          console.log('cancel tapcell select');
           // 取消当前cell选中
           tapCell.status = '';
           this.selectedCellKey = '';
         } else {
           if (this.selectedCellKey === '') {
-            console.log('select tapcell');
             // 选中当前cell
             tapCell.status = 'selected';
             this.selectedCellKey = tapCell.key;
           } else {
             const result = this.matchCouple(tapCell, selectedCell);
             if (result) {
-              console.log('remove couple');
               // 移除cell
               tapCell.status = 'remove';
               selectedCell.status = 'remove';
               this.selectedCellKey = '';
+              this.$emit('game.match_couple');
+              this.restCouple -= 1;
+              if (this.restCouple === 0) {
+                console.log('complete');
+                this.$emit('game-complete');
+              }
             } else {
-              console.log('cancel select error');
               // 取消选中
               selectedCell.status = '';
               this.selectedCellKey = '';
+              this.$emit('game.match_error');
             }
           }
         }
       }
     }
-    onLoad() {
-      this.init();
+    onLoad () {
     }
-    init() {
+    init (gameConfig) {
+
       this.selectedCellKey = '';
       this.cellData = {};
-      this.gameMap = this.generateGameMap(5, 4);
+
+      this.config = gameConfig;
+      this.row = gameConfig.row || 5;
+      this.col = gameConfig.col || 4;
+      this.gameMap = this.generateGameMap(this.row, this.col);
+      this.restCouple = this.colors.length;
+      this.$apply();
+      this.$emit('game.start');
     }
-    matchCouple(tapCell, selectedCell) {
+    matchCouple (tapCell, selectedCell) {
       return tapCell.value === selectedCell.value;
     }
-    putCellsIntoMap(row, col, values) {
+    putCellsIntoMap (row, col, values) {
       const needCount = row * col / 2;
       let cells = [];
       while (cells.length < needCount) {
@@ -170,34 +194,20 @@
       }
       return map;
     }
-    generateGameMap(row, col, type = 'color', myOption = {}) {
+    generateGameMap (row, col, type = 'color', myOption = {}) {
       if ((row * col) % 2 === 1) throw new Error('不允许奇数个方块！');
       const option = {
         count: myOption.count || row * col / 2,
-        similar: myOption.similar || 120
+        similar: myOption.similar || 50
       };
       if (type === 'color') {
         const colorPoints = generateColorPoints(option.count, option.similar);
         const colors = colorPoints.map(item => colorPointToHex(item));
-        console.log(colors);
+        this.colors = colors;
         return this.putCellsIntoMap(row, col, colors);
       }
-      // const map = [];
-      // const valueLen = values.length;
-      // for (let i = 0; i < row; i++) {
-      //   const row = [];
-      //   for (let j = 0; j < col; j++) {
-      //     const value = values[Math.floor(Math.random() * valueLen)];
-      //     const key = `${i}.${j}.${value}`;
-      //     const cell = this.generateCellObj(j, i, key, value);
-      //     this.cellData[key] = cell;
-      //     row.push(cell);
-      //   }
-      //   map.push(row);
-      // }
-      // return map;
     }
-    generateCellObj(x, y, value) {
+    generateCellObj (x, y, value) {
       const obj = {
         x,
         y,

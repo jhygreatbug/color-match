@@ -1,0 +1,39 @@
+<style>
+</style>
+<template>
+  <view class="round_title">{{roundInfo.name}}</view>
+  <navigator wx:for="{{levelInfo}}" wx:for-index="key" url="/pages/round-game?mode={{mode}}&level={{key}}">Level {{key}}</navigator>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import Config from '../config/config';
+  export default class Round extends wepy.page {
+    config = {
+      navigationBarTitleText: 'color match'
+    }
+    components = {
+    }
+
+    data = {
+      mode: '',
+      roundInfo: {},
+      levelInfo: {}
+    }
+
+    computed = {
+    }
+
+    methods = {
+    }
+
+    events = {
+    }
+
+    onLoad(param) {
+      this.mode = param.mode;
+      this.roundInfo = Config.roundInfo[param.mode];
+      this.levelInfo = Config.round[param.mode];
+    }
+  }
+</script>

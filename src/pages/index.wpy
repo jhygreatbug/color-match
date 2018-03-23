@@ -1,29 +1,30 @@
-<style lang="less">
+<style>
 </style>
 <template>
-  <view class="container">
-    <text>连连看</text>
-    <navigator wx:for="{{difficulty}}" url="/pages/game?mode={{item}}" hover-class="navigator-hover">{{item}}</navigator>
+  <view class="home_title">COLOR MATCH</view>
+  <view class="home_section">
+    <navigator wx:for="{{round}}" wx:for-item="mode" url="/pages/round?mode={{mode}}" class="home_card">
+      {{roundInfo[mode].name}}
+    </navigator>
   </view>
 </template>
 
 <script>
   import wepy from 'wepy';
+  import Config from '../config/config';
   export default class Index extends wepy.page {
     config = {
-      navigationBarTitleText: 'test'
+      navigationBarTitleText: 'color match'
     }
     components = {
     }
 
     data = {
-      difficulty: []
+      round: Config.displayRound,
+      roundInfo: Config.roundInfo
     }
 
     computed = {
-      now () {
-        return +new Date()
-      }
     }
 
     methods = {
@@ -33,7 +34,6 @@
     }
 
     onLoad() {
-      this.difficulty = this.$parent.globalData.difficulty;
     }
   }
 </script>
