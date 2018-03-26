@@ -71,6 +71,7 @@
     return str.slice(0, 2);
   };
   const colorPointToHex = p => `#${numberToIntHex(p[0])}${numberToIntHex(p[1])}${numberToIntHex(p[2])}`;
+  const typeOf = obj => Object.prototype.toString.call(obj).slice(8).slice(0, -1);
   function addVector(v1, v2) {
     return v1.map((item, index) => v1[index] + v2[index]);
   }
@@ -156,17 +157,35 @@
     onLoad () {
     }
     init (gameConfig) {
-
+      // 数据重置
       this.selectedCellKey = '';
       this.cellData = {};
 
+      // 参数初始化
       this.config = gameConfig;
       this.row = gameConfig.row || 5;
       this.col = gameConfig.col || 4;
-      this.gameMap = this.generateGameMap(this.row, this.col);
+      this.similar = gameConfig.similar || 100;
+
+      if ((this.row * this.col) % 2 === 1) throw new Error('不允许奇数个方块！');
+
+      // 生成cell
+      if (typeOf(gameConfig.colors) === 'Array' && gameConfig.colors.length > 0) {
+        this.colors = gameConfig.colors;
+      } else {
+        const decimalColors = generateColorPoints(this.row * this.col / 2, this.similar);
+        const hexColors = decimalColors.map(item => colorPointToHex(item));
+        this.colors = hexColors;
+      }
       this.restCouple = this.colors.length;
+
+      // 生成map
+      this.gameMap = this.putCellsIntoMap(this.row, this.col, this.colors);
+
       this.$apply();
       this.$emit('game.start');
+
+      console.log(this.colors);
     }
     matchCouple (tapCell, selectedCell) {
       return tapCell.value === selectedCell.value;
@@ -193,19 +212,6 @@
         map.push(row);
       }
       return map;
-    }
-    generateGameMap (row, col, type = 'color', myOption = {}) {
-      if ((row * col) % 2 === 1) throw new Error('不允许奇数个方块！');
-      const option = {
-        count: myOption.count || row * col / 2,
-        similar: myOption.similar || 50
-      };
-      if (type === 'color') {
-        const colorPoints = generateColorPoints(option.count, option.similar);
-        const colors = colorPoints.map(item => colorPointToHex(item));
-        this.colors = colors;
-        return this.putCellsIntoMap(row, col, colors);
-      }
     }
     generateCellObj (x, y, value) {
       const obj = {

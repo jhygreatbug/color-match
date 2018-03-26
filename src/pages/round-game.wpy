@@ -1,13 +1,18 @@
 <style>
+.game-func {
+  display: flex;
+}
 </style>
 <template>
   <view class="game">{{mode}} {{level}}</view>
   <game-box></game-box>
-  <view>
-    <navigator wx:if="{{prev}}" url="/pages/round-game?mode={{mode}}&level={{prev}}" open-type="redirect">prev</navigator>
-    <text>time</text>
-    <navigator wx:if="{{next}}" url="/pages/round-game?mode={{mode}}&level={{next}}" open-type="redirect">next</navigator>
+  <view class="game-func">
+    <view wx:if="{{prevLevel}}" @tap="prev">prev</view>
+    <view wx:if="{{nextLevel}}" @tap="next">next</view>
   </view>
+  <view>time: </view>
+  <view>perfect: </view>
+  <view>speedrun: </view>
 </template>
 
 <script>
@@ -25,8 +30,8 @@
     data = {
       mode: '',
       level: '',
-      prev: null,
-      next: null
+      prevLevel: null,
+      nextLevel: null
     }
 
     computed = {
@@ -39,7 +44,7 @@
       'game-complete': function () {
         console.log('event complete');
         if (this.next) {
-          wepy.redirectTo({url: `/pages/round-game?mode=${this.mode}&level=${this.next}`});
+          this.next();
         } else {
           wepy.redirectTo({url: `/pages/round?mode=${this.mode}`});
         }
@@ -49,10 +54,26 @@
     onLoad(param) {
       this.mode = param.mode;
       this.level = param.level;
-      const gameConfig = Config.round[param.mode][param.level];
-      this.prev = gameConfig.prev;
-      this.next = gameConfig.next;
+      this.init();
+    }
+
+    init() {
+      const gameConfig = Config.round[this.mode][this.level];
+      this.prevLevel = gameConfig.prev;
+      this.nextLevel = gameConfig.next;
       this.$invoke('game-box', 'init', gameConfig);
+    }
+
+    next() {
+      if (!this.next) return;
+      this.level = this.nextLevel;
+      this.init();
+    }
+
+    prev() {
+      if (!this.prev) return;
+      this.level = this.prevLevel;
+      this.init();
     }
   }
 </script>

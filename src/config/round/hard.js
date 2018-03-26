@@ -1,32 +1,50 @@
 export default {
   '1': {
+    // step: 10
     row: 4,
     col: 4,
     colors: [],
-    time: 60
+    similar: 80,
+    time: 60,
+    next: '2'
   },
   '2': {
-    row: 4,
+    // step: 10
+    row: 5,
     col: 4,
     colors: [],
-    time: 60
+    similar: 100,
+    time: 60,
+    prev: '1',
+    next: '3'
   },
   '3': {
-    row: 4,
+    // step: 10
+    row: 5,
     col: 4,
     colors: [],
-    time: 60
+    similar: 100,
+    time: 60,
+    prev: '2',
+    next: '4'
   },
   '4': {
-    row: 4,
+    // step: 10
+    row: 6,
     col: 4,
     colors: [],
-    time: 60
+    similar: 120,
+    time: 60,
+    prev: '3',
+    next: '5'
   },
   '5': {
-    row: 4,
-    col: 4,
+    // step: 8
+    row: 6,
+    col: 5,
     colors: [],
-    time: 60
+    similar: 120,
+    time: 60,
+    prev: '4'
   }
 };
