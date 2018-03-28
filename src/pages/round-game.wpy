@@ -43,7 +43,7 @@
     events = {
       'game-complete': function () {
         console.log('event complete');
-        if (this.next) {
+        if (this.nextLevel) {
           this.next();
         } else {
           wepy.redirectTo({url: `/pages/round?mode=${this.mode}`});

@@ -29,11 +29,11 @@ export default {
     next: '4'
   },
   '4': {
-    // step: 10
-    row: 6,
+    // step: 8
+    row: 5,
     col: 4,
     colors: [],
-    similar: 120,
+    similar: 80,
     time: 60,
     prev: '3',
     next: '5'
@@ -41,9 +41,9 @@ export default {
   '5': {
     // step: 8
     row: 6,
-    col: 5,
+    col: 4,
     colors: [],
-    similar: 120,
+    similar: 96,
     time: 60,
     prev: '4'
   }
