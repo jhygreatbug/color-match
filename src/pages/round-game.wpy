@@ -10,15 +10,19 @@
     <view wx:if="{{prevLevel}}" @tap="prev">prev</view>
     <view wx:if="{{nextLevel}}" @tap="next">next</view>
   </view>
-  <view>time: </view>
-  <view>perfect: </view>
-  <view>speedrun: </view>
+  <view>time: {{dispTime}}</view>
+  <view>perfect: {{record.perfect}}</view>
+  <view>speedRush: {{record.speedRush}}</view>
+  <view>shortestTime: {{record.shortestTime}}</view>
 </template>
 
 <script>
   import wepy from 'wepy';
   import Config from '../config/config';
   import GameBox from '../components/game-box';
+
+  const punishmentCoefficient = Config.punishmentCoefficient;
+
   export default class RoundGame extends wepy.page {
     config = {
       navigationBarTitleText: 'color match'
@@ -26,28 +30,61 @@
     components = {
       'game-box': GameBox
     }
-
     data = {
       mode: '',
       level: '',
+      record: {},
       prevLevel: null,
-      nextLevel: null
+      nextLevel: null,
+      startTimestamp: 0,
+      currentTimestamp: 0,
+      punishmentTime: 0
     }
 
     computed = {
+      dispTime () {
+        const time = this.gameTime;
+        const minute = Math.floor(time / 60);
+        const secound = time % 60;
+        const padTime = t => t >= 10 ? t : `0${t}`;
+        return `${padTime(minute)}:${padTime(secound)}`;
+      },
+      gameTime () {
+        return Math.floor((this.currentTimestamp - this.startTimestamp) / 1000 + this.punishmentTime * punishmentCoefficient);
+      }
     }
 
     methods = {
     }
 
     events = {
-      'game-complete': function () {
-        console.log('event complete');
+      'game.complete' () {
+        console.log('complete', this.mode, this.level)
+        clearInterval(this.timer);
+
+        const gameConfig = Config.round[this.mode][this.level];
+        const key = `${this.mode}/${this.level}`;
+        let gameRecord;
+        try {
+          gameRecord = wepy.getStorageSync(key) || {};
+        } catch (e) {}
+        gameRecord.perfect = gameRecord.perfect || this.punishmentTime === 0;
+        gameRecord.shortestTime = Math.min(gameRecord.shortestTime, this.gameTime);
+        gameRecord.speedRush = gameRecord.speedRush || this.gameTime <= gameConfig.limitTime;
+        try {
+          wepy.setStorageSync(key, gameRecord);
+        } catch (e) {}
+
+        this.gameTime = 0;
+
         if (this.nextLevel) {
           this.next();
         } else {
           wepy.redirectTo({url: `/pages/round?mode=${this.mode}`});
         }
+      },
+      'game.match_error' () {
+        this.punishmentTime++;
       }
     }
 
@@ -58,9 +95,26 @@
     }
 
     init() {
+      // 更新配置
       const gameConfig = Config.round[this.mode][this.level];
       this.prevLevel = gameConfig.prev;
       this.nextLevel = gameConfig.next;
+
+      const key = `${this.mode}/${this.level}`;
+      try {
+        this.record = wepy.getStorageSync(key) || {};
+      } catch (e) {}
+
+      // 重置参数
+      this.punishmentTime = 0;
+      this.startTimestamp = this.currentTimestamp = new Date().getTime();
+      clearInterval(this.timer);
+      this.timer = setInterval(_ => {
+        this.currentTimestamp = new Date().getTime();
+        this.$apply();
+      }, 1000);
+
+      // 启动游戏
       this.$invoke('game-box', 'init', gameConfig);
     }
 

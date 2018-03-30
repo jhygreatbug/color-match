@@ -141,8 +141,7 @@
               this.$emit('game.match_couple');
               this.restCouple -= 1;
               if (this.restCouple === 0) {
-                console.log('complete');
-                this.$emit('game-complete');
+                this.$emit('game.complete');
               }
             } else {
               // 取消选中

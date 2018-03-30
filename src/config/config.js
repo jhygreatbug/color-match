@@ -7,6 +7,8 @@ const Config = {};
 
 Config.debug = true;
 
+Config.punishmentCoefficient = 2;
+
 Config.round = {
   'easy': easyRound,
   'normal': normalRound,
@@ -52,4 +54,4 @@ Config.displayRound = ['easy', 'normal', 'hard', 'expert'];
 
 Config.specialRound = 'insane'
 
-export default Config;
+module.exports = Config;
