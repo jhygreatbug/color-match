@@ -2,7 +2,7 @@
 </style>
 <template>
   <view class="round_title">{{roundInfo.name}}</view>
-  <navigator wx:for="{{levelInfo}}" wx:for-index="key" url="/pages/round-game?mode={{mode}}&level={{key}}">Level {{key}}</navigator>
+  <navigator wx:for="{{levelInfo}}" wx:for-item="level" url="/pages/round-game?mode={{mode}}&level={{level.name}}">Level {{level.name}} {{level.perfect ? 'perfect' : ''}} {{level.speedRush ? 'speedRush' : ''}}</navigator>
 </template>
 
 <script>
@@ -32,8 +32,33 @@
 
     onLoad(param) {
       this.mode = param.mode;
-      this.roundInfo = Config.roundInfo[param.mode];
-      this.levelInfo = Config.round[param.mode];
+      this.roundConfig = Config.roundInfo[param.mode];
+    }
+
+    onShow() {
+      // 读取游戏记录
+      const recordKey = `round/${this.mode}`;
+      let records = {};
+      try {
+        records = wepy.getStorageSync(recordKey) || {}
+      } catch (e) {}
+
+      // 组合关卡和记录数据
+      const levelConfig = Config.round[this.mode];
+      const levelInfo = [];
+      let levelKey = this.roundConfig.startLevel;
+      let level = levelConfig[levelKey];
+      while (typeof level !== 'undefined') {
+        const levelRecord = records[levelKey] || {};
+        levelInfo.push({
+          name: levelKey,
+          perfect: levelRecord.perfect,
+          speedRush: levelRecord.speedRush
+        });
+        levelKey = level.next;
+        level = levelConfig[levelKey];
+      }
+      this.levelInfo = levelInfo;
     }
   }
 </script>

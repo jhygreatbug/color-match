@@ -5,7 +5,7 @@ export default {
     col: 4,
     colors: [],
     similar: 80,
-    time: 60,
+    limitTime: 20,
     next: '2'
   },
   '2': {
@@ -14,7 +14,7 @@ export default {
     col: 4,
     colors: [],
     similar: 100,
-    time: 60,
+    limitTime: 30,
     prev: '1',
     next: '3'
   },
@@ -24,7 +24,7 @@ export default {
     col: 4,
     colors: [],
     similar: 100,
-    time: 60,
+    limitTime: 30,
     prev: '2',
     next: '4'
   },
@@ -34,7 +34,7 @@ export default {
     col: 4,
     colors: [],
     similar: 80,
-    time: 60,
+    limitTime: 30,
     prev: '3',
     next: '5'
   },
@@ -44,7 +44,7 @@ export default {
     col: 4,
     colors: [],
     similar: 96,
-    time: 60,
+    limitTime: 36,
     prev: '4'
   }
 };

@@ -62,15 +62,18 @@
         console.log('complete', this.mode, this.level)
         clearInterval(this.timer);
 
+        // 更新游戏记录
         const gameConfig = Config.round[this.mode][this.level];
-        const key = `${this.mode}/${this.level}`;
+        const key = `round/${this.mode}`;
         let gameRecord;
         try {
           gameRecord = wepy.getStorageSync(key) || {};
         } catch (e) {}
-        gameRecord.perfect = gameRecord.perfect || this.punishmentTime === 0;
-        gameRecord.shortestTime = Math.min(gameRecord.shortestTime, this.gameTime);
-        gameRecord.speedRush = gameRecord.speedRush || this.gameTime <= gameConfig.limitTime;
+        const thisRecord = gameRecord[this.level] || {};
+        thisRecord.perfect = thisRecord.perfect || this.punishmentTime === 0;
+        thisRecord.shortestTime = Math.min(thisRecord.shortestTime || Number.MAX_SAFE_INTEGER, this.gameTime);
+        thisRecord.speedRush = thisRecord.speedRush || this.gameTime <= gameConfig.limitTime;
+        gameRecord[this.level] = thisRecord;
         try {
           wepy.setStorageSync(key, gameRecord);
         } catch (e) {}
@@ -100,9 +103,9 @@
       this.prevLevel = gameConfig.prev;
       this.nextLevel = gameConfig.next;
 
-      const key = `${this.mode}/${this.level}`;
+      const key = `round/${this.mode}`;
       try {
-        this.record = wepy.getStorageSync(key) || {};
+        this.record = wepy.getStorageSync(key)[this.level] || {};
       } catch (e) {}
 
       // 重置参数
