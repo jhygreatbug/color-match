@@ -1,4 +1,4 @@
-<style lang="less">
+<style>
 .container {
   height: 100%;
   display: flex;
@@ -7,8 +7,11 @@
   justify-content: space-between;
   box-sizing: border-box;
 }
+page {
+  background-color: #0b0218;
+  color: #f4fde7;
+}
 </style>
-
 <script>
 import wepy from 'wepy';
 import 'wepy-async-function';
@@ -23,10 +26,13 @@ export default class extends wepy.app {
       'pages/debug'
     ],
     window: {
+      backgroundColor: '#0b0218',
       backgroundTextStyle: 'light',
-      navigationBarBackgroundColor: '#fff',
-      navigationBarTitleText: 'WeChat',
-      navigationBarTextStyle: 'black'
+      backgroundColorTop: '#0b0218',
+      backgroundColorBottom: '#0b0218',
+      navigationBarBackgroundColor: '#0b0218',
+      navigationBarTitleText: '',
+      navigationBarTextStyle: 'light'
     }
   }
 

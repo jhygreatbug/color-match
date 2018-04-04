@@ -25,7 +25,13 @@
 
   export default class RoundGame extends wepy.page {
     config = {
-      navigationBarTitleText: 'color match'
+      backgroundColor: '#0b0218',
+      backgroundTextStyle: 'light',
+      backgroundColorTop: '#0b0218',
+      backgroundColorBottom: '#0b0218',
+      navigationBarBackgroundColor: '#0b0218',
+      navigationBarTitleText: '★☆',
+      navigationBarTextStyle: 'white'
     }
     components = {
       'game-box': GameBox
@@ -59,7 +65,6 @@
 
     events = {
       'game.complete' () {
-        console.log('complete', this.mode, this.level)
         clearInterval(this.timer);
 
         // 更新游戏记录
@@ -83,7 +88,7 @@
         if (this.nextLevel) {
           this.next();
         } else {
-          wepy.redirectTo({url: `/pages/round?mode=${this.mode}`});
+          wepy.navigateBack({delta: 1});
         }
       },
       'game.match_error' () {

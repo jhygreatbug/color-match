@@ -10,7 +10,7 @@
   .refer-box-cell {
     flex: 1;
     margin: 8rpx;
-    max-width: 200rpx;
+    max-width: 160rpx;
     border-radius: 15%;
     background-color: #eee;
   }

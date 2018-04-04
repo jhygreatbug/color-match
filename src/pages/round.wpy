@@ -10,7 +10,13 @@
   import Config from '../config/config';
   export default class Round extends wepy.page {
     config = {
-      navigationBarTitleText: 'color match'
+      backgroundColor: '#0b0218',
+      backgroundTextStyle: 'light',
+      backgroundColorTop: '#0b0218',
+      backgroundColorBottom: '#0b0218',
+      navigationBarBackgroundColor: '#0b0218',
+      navigationBarTitleText: '★☆',
+      navigationBarTextStyle: 'white'
     }
     components = {
     }

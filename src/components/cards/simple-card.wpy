@@ -1,0 +1,160 @@
+<style>
+  .c-wrapper {
+    position: relative;
+    padding-bottom: 100%;
+  }
+  .c-bg {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .c-content {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .c-simple .c-bg {
+    border-radius: 10rpx;
+    background-color: #666;
+    transition: width 0.5s cubic-bezier(.07,.38,.43,1.29), height 0.5s cubic-bezier(.07,.38,.43,1.29);
+  }
+  .c-hide.c-simple .c-bg {
+    width: 0;
+    height: 0;
+  }
+  .c-simple .c-content {
+    color: #fff;
+    font-size: 30rpx;
+    letter-spacing: 10rpx;
+    text-indent: 10rpx;
+    transition: top 0.3s cubic-bezier(.07,.38,.43,1.29), opacity 0.3s linear;
+  }
+  .c-hide.c-simple .c-content {
+    top: 50rpx;
+    opacity: 0;
+  }
+
+  .c-progress.c-wrapper {
+    transition: transform 600ms cubic-bezier(.54,-0.33,.59,.82);
+    transform: translate3d(0, 0, 0);
+  }
+  .c-hide.c-progress {
+    transform: translate3d(0, 60rpx, 0);
+  }
+  .c-progress .c-bg {
+    display: grid;
+    grid-template-rows: repeat(5, 1fr);
+  }
+  .c-progress-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .c-progress-row:first-child .c-progress-cell:first-child {
+    border-top-left-radius: 16rpx;
+  }
+  .c-progress-row:first-child .c-progress-cell:last-child {
+    border-top-right-radius: 16rpx;
+  }
+  .c-progress-row:last-child .c-progress-cell:first-child {
+    border-bottom-left-radius: 16rpx;
+  }
+  .c-progress-row:last-child .c-progress-cell:last-child {
+    border-bottom-right-radius: 16rpx;
+  }
+  .c-progress-cell {
+    background-color: #666;
+    transition: transform 300ms ease-out;
+    transform-origin: left top;
+    transform: scale(1);
+    font-size: 20rpx;
+  }
+  .c-hide.c-progress .c-progress-cell {
+    transform: scale(0);
+  }
+  .c-progress .c-content {
+    color: #fff;
+    font-size: 30rpx;
+    letter-spacing: 10rpx;
+    text-indent: 10rpx;
+    transition: letter-spacing 1200ms ease-in-out, text-indent 1200ms ease-in-out, opacity 1200ms linear;
+  }
+  .c-hide.c-progress .c-content {
+    letter-spacing: 20rpx;
+    text-indent: 20rpx;
+    opacity: 0;
+  }
+</style>
+
+<template>
+  <view class="c-wrapper c-{{type}} {{show ? '' : 'c-hide'}}" style="transition-delay: {{delay}}ms">
+    <block wx:if="{{type === 'simple'}}">
+      <view class="c-bg" style="background-color: {{color}}; transition-delay: {{delay}}ms"></view>
+      <view class="c-content" style="transition-delay: {{delay + 300}}ms">
+        <slot name="simple"></slot>
+      </view>
+    </block>
+    <block wx:elif="{{type === 'progress'}}">
+      <view class="c-bg">
+        <view class="c-progress-row" wx:for="{{progressData}}" wx:for-item="row" wx:for-index="i" wx:key="i">
+          <view class="c-progress-cell" wx:for="{{row}}" wx:for-index="j" wx:key="j" style="transition-delay: {{(i + j) * 30 + delay}}ms; background-color: {{i * progressSize + j < progressCount * progress ? colors[i * progressSize + j] : ''}}"></view>
+        </view>
+      </view>
+      <view class="c-content" style="transition-delay: {{delay}}ms">
+        <slot name="progress"></slot>
+      </view>
+    </block>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import Color from '../../lib/Color';
+  const progressSize = 5;
+  const progressCount = progressSize * progressSize;
+  export default class SimpleCard extends wepy.component {
+    props = {
+      type: {
+        type: String,
+        default: 'simple'
+      },
+      color: {
+        type: [String, Array]
+      },
+      delay: {
+        type: Number,
+        default: 200
+      },
+      show: {
+        type: Boolean,
+        default: false
+      },
+      progress: {
+        type: Number,
+        default: 0
+      }
+    }
+    data = {
+      progressSize: progressSize,
+      progressCount: progressCount,
+      progressData: [
+        [1, 2, 3, 4, 5],
+        [1, 2, 3, 4, 5],
+        [1, 2, 3, 4, 5],
+        [1, 2, 3, 4, 5],
+        [1, 2, 3, 4, 5]
+      ],
+      colors: []
+    }
+    methods = {
+    }
+    onLoad () {
+      const start = new Color('#000000');
+      const end = new Color('#ffffff');
+      const colors = start.interpolation(end, 25);
+      this.colors = colors.map(item => item.toString());
+    }
+  }
+</script>

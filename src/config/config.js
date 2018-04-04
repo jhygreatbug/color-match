@@ -22,6 +22,8 @@ Config.roundInfo = {
     key: 'easy',
     name: '简单',
     startLevel: '1',
+    count: 5,
+    color: '#4d8bca',
     startColor: '',
     endColor: ''
   },
@@ -29,6 +31,8 @@ Config.roundInfo = {
     key: 'normal',
     name: '普通',
     startLevel: '1',
+    count: 5,
+    color: '#b27435',
     startColor: '',
     endColor: ''
   },
@@ -36,6 +40,8 @@ Config.roundInfo = {
     key: 'hard',
     name: '困难',
     startLevel: '1',
+    count: 5,
+    color: '#d85b5b',
     startColor: '',
     endColor: ''
   },
@@ -43,6 +49,8 @@ Config.roundInfo = {
     key: 'expert',
     name: '大师',
     startLevel: '1',
+    count: 5,
+    color: '#9e5fdc',
     startColor: '',
     endColor: ''
   },
@@ -50,6 +58,7 @@ Config.roundInfo = {
     key: 'insane',
     name: '疯狂',
     startLevel: '1',
+    count: 5,
     startColor: '',
     endColor: ''
   }
@@ -57,6 +66,8 @@ Config.roundInfo = {
 
 Config.displayRound = ['easy', 'normal', 'hard', 'expert'];
 
-Config.specialRound = 'insane'
+Config.specialRound = 'insane';
+
+Config.bgColor = '#0b0218';
 
 module.exports = Config;
