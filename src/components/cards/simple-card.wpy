@@ -99,7 +99,7 @@
     <block wx:elif="{{type === 'progress'}}">
       <view class="c-bg">
         <view class="c-progress-row" wx:for="{{progressData}}" wx:for-item="row" wx:for-index="i" wx:key="i">
-          <view class="c-progress-cell" wx:for="{{row}}" wx:for-index="j" wx:key="j" style="transition-delay: {{(i + j) * 30 + delay}}ms; background-color: {{i * progressSize + j < progressCount * progress ? colors[i * progressSize + j] : ''}}"></view>
+          <view class="c-progress-cell" wx:for="{{row}}" wx:for-index="j" wx:key="j" style="transition-delay: {{(i + j) * 30 + delay}}ms; background-color: {{i * progressSize + j < progressCount * progress ? colors[i][j] : ''}}"></view>
         </view>
       </view>
       <view class="c-content" style="transition-delay: {{delay}}ms">
@@ -111,7 +111,6 @@
 
 <script>
   import wepy from 'wepy';
-  import Color from '../../lib/Color';
   const progressSize = 5;
   const progressCount = progressSize * progressSize;
   export default class SimpleCard extends wepy.component {
@@ -120,8 +119,9 @@
         type: String,
         default: 'simple'
       },
-      color: {
-        type: [String, Array]
+      colors: {
+        type: Array,
+        default: []
       },
       delay: {
         type: Number,
@@ -145,16 +145,7 @@
         [1, 2, 3, 4, 5],
         [1, 2, 3, 4, 5],
         [1, 2, 3, 4, 5]
-      ],
-      colors: []
-    }
-    methods = {
-    }
-    onLoad () {
-      const start = new Color('#000000');
-      const end = new Color('#ffffff');
-      const colors = start.interpolation(end, 25);
-      this.colors = colors.map(item => item.toString());
+      ]
     }
   }
 </script>

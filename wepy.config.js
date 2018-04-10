@@ -1,4 +1,8 @@
 const path = require('path');
+const assets = require('postcss-assets');
+const cssnext = require('postcss-cssnext');
+const inlineSvg = require('postcss-inline-svg');
+const baseDir = 'src';
 var prod = process.env.NODE_ENV === 'production';
 
 module.exports = {
@@ -7,15 +11,14 @@ module.exports = {
   cliLogs: !prod,
   build: {
     web: {
-      htmlTemplate: path.join('src', 'index.template.html'),
+      htmlTemplate: path.join(baseDir, 'index.template.html'),
       htmlOutput: path.join('web', 'index.html'),
       jsOutput: path.join('web', 'index.js')
     }
   },
   resolve: {
     alias: {
-      counter: path.join(__dirname, 'src/components/counter'),
-      '@': path.join(__dirname, 'src')
+      '@': path.join(__dirname, baseDir)
     },
     aliasFields: ['wepy'],
     modules: ['node_modules']
@@ -27,6 +30,19 @@ module.exports = {
     /*sass: {
       outputStyle: 'compressed'
     },*/
+    postcss: {
+      plugins: [
+        cssnext({
+          browsers:['iOS 9', 'Android 4.4']
+        }),
+        assets({
+           loadPaths: [path.join(baseDir, 'assets')]
+        }),
+        inlineSvg({
+          path: path.join(baseDir, 'assets')
+        })
+      ]
+    },
     babel: {
       sourceMap: true,
       presets: [

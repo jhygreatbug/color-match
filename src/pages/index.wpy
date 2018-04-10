@@ -1,4 +1,4 @@
-<style>
+<style lang="postcss">
   .home-section {
     display: grid;
     grid-gap: 50rpx;
@@ -42,11 +42,11 @@
   }
   .home-card-perfect {
     right: 68rpx;
-    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 47.9 47.9" fill="#f1b032"><path d="M26.3,2.5l5.4,11c0.4,0.8,1.1,1.3,1.9,1.4l12.1,1.8c2.1,0.3,3,2.9,1.4,4.4l-8.7,8.5c-0.6,0.6-0.9,1.4-0.7,2.3l2.1,12c0.4,2.1-1.9,3.7-3.7,2.7l-10.8-5.7c-0.8-0.4-1.7-0.4-2.4,0l-10.8,5.7c-1.9,1-4.1-0.6-3.7-2.7l2.1-12c0.1-0.8-0.1-1.7-0.7-2.3l-8.7-8.5c-1.5-1.5-0.7-4.1,1.4-4.4l12.1-1.8c0.8-0.1,1.6-0.7,1.9-1.4l5.4-11C22.6,0.6,25.3,0.6,26.3,2.5z"/></svg>');
+    background-image: svg-load('star.svg');
   }
   .home-card-speed {
     right: 18rpx;
-    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 352.2 352.2" fill="#d34141"><path d="M306.8,134.1c3.3-1.2,6.2-3.1,8.6-5.8l0.4-0.4c7.5-8.6,6.7-21.6-1.8-29.2l-45.6-40.3c-3.8-3.3-8.6-5.2-13.7-5.2c-5.9,0-11.6,2.6-15.5,7l-0.4,0.4c-1.9,2.1-3.2,4.5-4.1,7.1c-10.6-4.6-21.9-7.9-33.6-9.9V42h6.4c11.4,0,20.6-9.2,20.6-20.6v-0.8C228,9.2,218.8,0,207.4,0h-62.8c-11.4,0-20.6,9.2-20.6,20.6v0.8c0,11.4,9.2,20.6,20.6,20.6h7.4v15.8C81.7,69.3,27.9,130.5,27.9,204c0,81.7,66.5,148.2,148.2,148.2c81.7,0,148.2-66.5,148.2-148.2C324.3,178.7,318,155,306.8,134.1z M176.1,316.2c-61.9,0-112.2-50.3-112.2-112.2S114.2,91.8,176.1,91.8c61.9,0,112.2,50.3,112.2,112.2S238,316.2,176.1,316.2z"/><path d="M191,177.6V133c0-8.3-6.7-15-15-15c-8.3,0-15,6.7-15,15v44.7c-8.8,5.2-14.7,14.7-14.7,25.7c0,16.4,13.4,29.8,29.8,29.8c16.4,0,29.8-13.4,29.8-29.8C205.9,192.4,199.9,182.7,191,177.6z"/></svg>');
+    background-image: svg-load('time.svg');
   }
   .home-card-perfect:before,
   .home-card-perfect:after,
@@ -84,9 +84,9 @@
 <template>
   <view class="home-section" wx:if="{{showPage}}">
     <repeat wx:for="{{round}}" wx:for-item="mode" wx:key="key">
-      <c-simple type="progress" :progress="roundInfo[mode].completeCount / roundInfo[mode].count" :color="roundInfo[mode].color" :delay="150 * index" :show.sync="showSection">
+      <c-simple type="progress" :progress="roundInfo[mode].progress" :colors.sync="colors[mode]" :delay="150 * index" :show.sync="showSection">
         <navigator slot="progress" url="/pages/round?mode={{mode}}" class="home-card {{showSection ? '' : 'home-card-hide'}}">
-          <view class="home-card-content">{{roundInfo[mode].name}}</view>
+          <view class="home-card-content">{{roundConfig[mode].name}}</view>
           <view wx:if="{{roundInfo[mode].perfect}}" class="home-card-perfect" style="transition-delay: {{200 * index + 600}}ms"></view>
           <view wx:if="{{roundInfo[mode].speedRush}}" class="home-card-speed" style="transition-delay: {{200 * index + 700}}ms"></view>
         </navigator>
@@ -99,6 +99,7 @@
   import wepy from 'wepy';
   import Config from '../config/config';
   import SimpleCard from '../components/cards/simple-card';
+  import Color from '../lib/Color';
   export default class Index extends wepy.page {
     config = {
       backgroundColor: '#0b0218',
@@ -117,7 +118,9 @@
       showPage: true,
       showSection: false,
       round: Config.displayRound,
-      roundInfo: {}
+      roundConfig: Config.roundInfo,
+      roundInfo: {},
+      colors: {}
     }
 
     computed = {
@@ -130,22 +133,39 @@
     }
 
     onShow() {
+      this.updateRoundInfo();
+
+      this.generateColor();
+
       this.showSection = false;
       this.showPage = true;
       setTimeout(_ => {
         this.showSection = true;
         this.$apply();
       }, 500);
-
-      this.updateRoundInfo();
     }
 
     onHide() {
       this.showPage = false;
     }
 
+    generateColor () {
+      this.round.forEach(roundKey => {
+        if (typeof this.roundInfo[roundKey] === 'undefined') return;
+        const topLeftColor = new Color(this.roundConfig[roundKey].color);
+        const topRightColor = topLeftColor.hue(-20).saturation(-10);
+        const bottomLeftColor = topLeftColor.lightness(-8);
+        const bottomRightColor = bottomLeftColor.hue(-10).lightness(-8);
+        const progress = this.roundInfo[roundKey].progress;
+        const width = Math.floor(progress * 5 >= 1 ? 5 : progress * 5 * 5 % 5);
+        const height = Math.floor(progress * 5);
+        const colors = Color.interpolation2d(topLeftColor, topRightColor, bottomLeftColor, bottomRightColor, width, height);
+        this.colors[roundKey] = colors.map(line => line.map(item => item.toString()));
+      });
+    }
+
     updateRoundInfo () {
-      const roundInfo = Config.roundInfo;
+      const roundInfo = {};
       try {
         const res = wepy.getStorageInfoSync();
         res.keys.forEach(storageKey => {
@@ -162,9 +182,13 @@
             perfect = level.perfect && perfect;
             speedRush = level.speedRush && speedRush;
           }
-          roundInfo[roundKey].completeCount = completeCount;
-          roundInfo[roundKey].perfect = perfect && completeCount === roundInfo[roundKey].count;
-          roundInfo[roundKey].speedRush = speedRush && completeCount === roundInfo[roundKey].count;
+          const roundInfoItem = {};
+          const roundConfigItem = this.roundConfig[roundKey];
+          roundInfoItem.completeCount = completeCount;
+          roundInfoItem.perfect = perfect && completeCount === roundConfigItem.count;
+          roundInfoItem.speedRush = speedRush && completeCount === roundConfigItem.count;
+          roundInfoItem.progress = completeCount / roundConfigItem.count;
+          roundInfo[roundKey] = roundInfoItem;
         });
       } catch (e) {}
       this.roundInfo = roundInfo;
