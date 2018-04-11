@@ -23,44 +23,34 @@ Config.roundInfo = {
     name: '简单',
     startLevel: '1',
     count: 5,
-    color: '#4d8bca',
-    startColor: '',
-    endColor: ''
+    color: '#4d8bca'
   },
   'normal': {
     key: 'normal',
     name: '普通',
     startLevel: '1',
     count: 5,
-    color: '#b27435',
-    startColor: '',
-    endColor: ''
+    color: '#b27435'
   },
   'hard': {
     key: 'hard',
     name: '困难',
     startLevel: '1',
     count: 5,
-    color: '#d85b5b',
-    startColor: '',
-    endColor: ''
+    color: '#d85b5b'
   },
   'expert': {
     key: 'expert',
     name: '大师',
     startLevel: '1',
     count: 5,
-    color: '#9e5fdc',
-    startColor: '',
-    endColor: ''
+    color: '#9e5fdc'
   },
   'insane': {
     key: 'insane',
     name: '疯狂',
     startLevel: '1',
-    count: 5,
-    startColor: '',
-    endColor: ''
+    count: 5
   }
 }
 

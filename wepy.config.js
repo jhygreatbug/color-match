@@ -27,9 +27,6 @@ module.exports = {
     less: {
       compress: prod
     },
-    /*sass: {
-      outputStyle: 'compressed'
-    },*/
     postcss: {
       plugins: [
         cssnext({

@@ -10,6 +10,7 @@
 page {
   background-color: #0b0218;
   color: #f4fde7;
+  height: 100%;
 }
 </style>
 <script>

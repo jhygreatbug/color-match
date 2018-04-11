@@ -1,19 +1,127 @@
-<style>
-.game-func {
+<style lang="postcss">
+.game-wrap {
   display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.game-main {
+  flex: 1;
+}
+
+.game-footer {
+  position: relative;
+  flex: none;
+  height: 80rpx;
+}
+
+.game-footer-left,
+.game-footer-center,
+.game-footer-right {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.game-footer-left {
+  left: 0;
+}
+
+.game-footer-center {
+  left: 50%;
+  transform: translate3d(-50%, 0, 0);
+}
+
+.game-footer-right {
+  right: 0;
+}
+
+.game-footer-perfect,
+.game-footer-speed {
+  width: 36rpx;
+  height: 36rpx;
+}
+.game-footer-perfect {
+  margin-left: 20rpx;
+}
+.game-footer-speed {
+  margin-left: 10rpx;
+}
+.game-footer-prev,
+.game-footer-next{
+  width: 60rpx;
+  height: 60rpx;
+}
+.game-footer-next {
+  margin-left: 10rpx;
+}
+.game-footer-restart{
+  width: 48rpx;
+  height: 48rpx;
+  background-size: 48rpx;
+  margin-left: 10rpx;
+}
+
+.game-footer-time {
+  margin-left: 16rpx;
+  font-size: 24rpx;
+  line-height: 1;
+}
+
+.game-footer-prev,
+.game-footer-restart,
+.game-footer-next,
+.game-footer-perfect,
+.game-footer-speed {
+  background-position: center center;
+  background-size: 32rpx;
+  background-repeat: no-repeat;
+}
+
+.game-footer-prev {
+  background-image: svg-load('left-arrow.svg');
+}
+.game-footer-restart {
+  background-image: svg-load('reload.svg');
+}
+.game-footer-next {
+  background-image: svg-load('right-arrow.svg');
+}
+.game-footer-perfect {
+  background-image: svg-load('star.svg', fill=gray);
+}
+.game-footer-perfect.active {
+  background-image: svg-load('star.svg');
+}
+.game-footer-speed {
+  background-image: svg-load('time.svg', fill=gray);
+}
+.game-footer-speed.active {
+  background-image: svg-load('time.svg');
 }
 </style>
 <template>
-  <view class="game">{{mode}} {{level}}</view>
-  <game-box></game-box>
-  <view class="game-func">
-    <view wx:if="{{prevLevel}}" @tap="prev">prev</view>
-    <view wx:if="{{nextLevel}}" @tap="next">next</view>
+  <view class="game-wrap" @tap="tapGame()">
+    <view class="game-main">
+      <game-box></game-box>
+    </view>
+    <view class="game-footer">
+      <view class="game-footer-left">
+        <view class="game-footer-perfect {{record.perfect ? 'active' : ''}}"></view>
+        <view class="game-footer-speed {{record.speedRush ? 'active' : ''}}"></view>
+        <view class="game-footer-time">{{dispTime}}</view>
+      </view>
+      <view class="game-footer-center">
+        <view class="game-footer-prev" wx:if="{{prevLevel}}" @tap="prev"></view>
+        <view class="game-footer-restart" @tap="restart"></view>
+        <view class="game-footer-next" wx:if="{{nextLevel}}" @tap="next"></view>
+      </view>
+      <view class="game-footer-right">
+      </view>
+    </view>
   </view>
-  <view>time: {{dispTime}}</view>
-  <view>perfect: {{record.perfect}}</view>
-  <view>speedRush: {{record.speedRush}}</view>
-  <view>shortestTime: {{record.shortestTime}}</view>
 </template>
 
 <script>
@@ -30,7 +138,7 @@
       backgroundColorTop: '#0b0218',
       backgroundColorBottom: '#0b0218',
       navigationBarBackgroundColor: '#0b0218',
-      navigationBarTitleText: '★☆',
+      navigationBarTitleText: '',
       navigationBarTextStyle: 'white'
     }
     components = {
@@ -38,6 +146,7 @@
     }
     data = {
       mode: '',
+      name: '',
       level: '',
       record: {},
       prevLevel: null,
@@ -61,6 +170,9 @@
     }
 
     methods = {
+      tapGame () {
+        this.$invoke('game-box', 'cancelSelectCell');
+      }
     }
 
     events = {
@@ -97,8 +209,10 @@
     }
 
     onLoad(param) {
+      const roundConfig = Config.roundInfo[param.mode];
       this.mode = param.mode;
       this.level = param.level;
+      this.name = roundConfig.name;
       this.init();
     }
 
@@ -107,6 +221,8 @@
       const gameConfig = Config.round[this.mode][this.level];
       this.prevLevel = gameConfig.prev;
       this.nextLevel = gameConfig.next;
+
+      wepy.setNavigationBarTitle({ title: `${this.name}-Level${this.level}` });
 
       const key = `round/${this.mode}`;
       try {
