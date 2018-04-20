@@ -114,9 +114,9 @@
         <view class="game-footer-time">{{dispTime}}</view>
       </view>
       <view class="game-footer-center">
-        <view class="game-footer-prev" wx:if="{{prevLevel}}" @tap="prev"></view>
+        <view class="game-footer-prev" @tap="prev"></view>
         <view class="game-footer-restart" @tap="restart"></view>
-        <view class="game-footer-next" wx:if="{{nextLevel}}" @tap="next"></view>
+        <view class="game-footer-next" @tap="next"></view>
       </view>
       <view class="game-footer-right">
       </view>
@@ -243,13 +243,19 @@
     }
 
     next() {
-      if (!this.next) return;
+      if (!this.nextLevel) {
+        wepy.navigateBack({delta: 1});
+        return;
+      }
       this.level = this.nextLevel;
       this.init();
     }
 
     prev() {
-      if (!this.prev) return;
+      if (!this.prevLevel) {
+        wepy.navigateBack({delta: 1});
+        return;
+      }
       this.level = this.prevLevel;
       this.init();
     }

@@ -1,4 +1,30 @@
 <style lang="postcss">
+  .game-box-wrap {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .game-box {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: auto;
+  }
+
+  .game-box-con {
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    max-width: 400rpx;
+  }
+
+  .refer-box {
+    padding: 40rpx 0;
+  }
+
   .game-box-row,
   .refer-box-row {
     display: flex;
@@ -8,26 +34,41 @@
 
   .game-box-cell,
   .refer-box-cell {
-    flex: 1;
+    box-sizing: border-box;
     margin: 8rpx;
-    max-width: 160rpx;
-    border-radius: 15%;
+    border-radius: 12%;
     transition: transform 200ms ease;
     transform: scale(1);
   }
 
   .refer-box-cell {
-    max-width: 100rpx;
-    min-width: 50rpx;
+    flex: 1;
   }
-
-  .game-box-cell:before,
   .refer-box-cell:before {
     display: block;
-    content: attr(data-content);
+    content: '';
     padding-bottom: 100%;
     height: 0;
     text-align: center;
+  }
+
+  .game-box-cell {
+    width: 100rpx;
+    height: 100rpx;
+  }
+
+  .game-box-col2 .game-box-cell {
+    width: 150rpx;
+    height: 150rpx;
+  }
+  .game-box-col3 .game-box-cell {
+    width: 120rpx;
+    height: 120rpx;
+  }
+
+  .refer-box-cell {
+    max-width: 90rpx;
+    min-width: 50rpx;
   }
 
   .game-box-cell.active {
@@ -39,84 +80,76 @@
   }
 
   .game-box-cell-selected {
-    box-shadow: 0 0 12rpx rgba(0, 0, 0, .5);
+    color: rgba(255, 255, 255, .7);
+    border: 8rpx solid currentColor;
   }
 
-  .game-box-cell-error {
-    box-shadow: 0 0 12rpx #ff685d;
+  .game-box-cell-error:before {
+    color: #ff685d;
+    border: 8rpx solid currentColor;
   }
 
 </style>
 
 <template>
-  <view class="game-box">
-    <view wx:for="{{gameMap}}" wx:for-item="row" wx:for-index="i" class="game-box-row">
-      <view wx:for="{{row}}" wx:for-item="cell" wx:key="key"
-        class="game-box-cell {{cell.status !== '' ? 'game-box-cell-' + cell.status : ''}}"
-        hover-class="active"
-        hover-start-time="150"
-        hover-stay-time="0"
-        @tap.stop="tapCell({{cell}})"
-        style="background-color: {{cell.value}};{{cell.status === 'selected' ? 'box-shadow: 0px 0px 0px 4px #fff;' : ''}}">
+  <view class="game-box-wrap">
+    <view class="game-box">
+      <view class="game-box-con">
+        <view wx:for="{{gameMap}}" wx:for-item="row" wx:for-index="i" class="game-box-row game-box-col{{colCount}}">
+          <view wx:for="{{row}}" wx:for-item="cell" wx:key="key"
+            class="game-box-cell {{cell.status !== '' ? 'game-box-cell-' + cell.status : ''}}"
+            hover-class="active"
+            hover-start-time="0"
+            hover-stay-time="0"
+            @tap.stop="tapCell({{cell}})"
+            style="background-color: {{cell.value}}; color: {{cell.lightBorder}}">
+          </view>
+        </view>
       </view>
     </view>
-  </view>
 
-  <scroll-view scroll-x="true">
-    <view class="refer-box-row">
-      <view wx:for="{{colors}}" class="refer-box-cell" style="background-color: {{item}}">
+    <scroll-view scroll-x="true" class="refer-box">
+      <view class="refer-box-row">
+        <view wx:for="{{colors}}" class="refer-box-cell" style="background-color: {{item}}">
+        </view>
       </view>
-    </view>
-  </scroll-view>
+    </scroll-view>
+  </view>
 </template>
 
 <script>
   import wepy from 'wepy';
+  import Color from '../lib/Color';
   const RGBMaxValue = 255;
-  const getRandomNumber = num => Math.floor(Math.random() * num);
-  const numberToIntHex = num => {
-    let str = Math.floor(num).toString(16);
-    if (str.length < 2) {
-      str = '0' + str;
-    }
-    return str.slice(0, 2);
-  };
-  const colorPointToHex = p => `#${numberToIntHex(p[0])}${numberToIntHex(p[1])}${numberToIntHex(p[2])}`;
   const typeOf = obj => Object.prototype.toString.call(obj).slice(8).slice(0, -1);
-  function addVector(v1, v2) {
-    return v1.map((item, index) => v1[index] + v2[index]);
+  function inRange(n, a, b) {
+    return a <= n && n <= b;
   }
-  function subtractVector(v1, v2) {
-    return v1.map((item, index) => v1[index] - v2[index]);
-  }
-  function divisionVector(v1, num) {
-    return v1.map(item => item / num);
+  function randomNum(a, b = 0) {
+    return parseInt(Math.random() * (b - a) + a, 10);
   }
   function generateEndPoint(startPoint, len) {
-    const inRange = value => value >= 0 && value <= RGBMaxValue;
     const angle1 = Math.random() * 2 * Math.PI;
     const angle2 = Math.random() * 2 * Math.PI;
     const x = startPoint[0] + len * Math.cos(angle1);
     const _len = len * Math.sin(angle1);
     const y = startPoint[1] + _len * Math.cos(angle2);
     const z = startPoint[2] + _len * Math.sin(angle2);
-    return inRange(x) && inRange(y) && inRange(z) ? [x, y, z] : generateEndPoint(startPoint, len);
+    return inRange(x, 0, RGBMaxValue) && inRange(y, 0, 100) && inRange(z, 0, 100) ? [x, y, z] : generateEndPoint(startPoint, len);
   }
   function generateColorPoints(count, similar) {
-    const startPoint = [getRandomNumber(RGBMaxValue), getRandomNumber(RGBMaxValue), getRandomNumber(RGBMaxValue)];
+    const startPoint = [randomNum(RGBMaxValue), randomNum(25, 75), randomNum(25, 75)];
     const endPoint = generateEndPoint(startPoint, similar);
-    const step = divisionVector(subtractVector(endPoint, startPoint), count - 1);
-    const points = [startPoint];
-    for (let i = 1; i < count; i++) {
-      points.unshift(addVector(points[0], step));
-    }
-    return points;
+    const colors = Color.interpolation(new Color(startPoint), new Color(endPoint), count);
+    return colors.map(item => item.toHexString());
   }
   export default class GameCell extends wepy.component {
     props = {}
     data = {
       gameMap: [],
       cellData: {},
+      rowCount: 0,
+      colCount: 0,
       colors: [],
       restCouple: 0,
       selectedCellKey: ''
@@ -172,8 +205,8 @@
 
       // 参数初始化
       this.config = gameConfig;
-      this.row = gameConfig.row || 5;
-      this.col = gameConfig.col || 4;
+      this.rowCount = gameConfig.row || 5;
+      this.colCount = gameConfig.col || 4;
       this.similar = gameConfig.similar || 100;
 
       if ((this.row * this.col) % 2 === 1) throw new Error('不允许奇数个方块！');
@@ -182,14 +215,12 @@
       if (typeOf(gameConfig.colors) === 'Array' && gameConfig.colors.length > 0) {
         this.colors = gameConfig.colors;
       } else {
-        const decimalColors = generateColorPoints(this.row * this.col / 2, this.similar);
-        const hexColors = decimalColors.map(item => colorPointToHex(item));
-        this.colors = hexColors;
+        this.colors = generateColorPoints(this.rowCount * this.colCount / 2, this.similar);
       }
       this.restCouple = this.colors.length;
 
       // 生成map
-      this.gameMap = this.putCellsIntoMap(this.row, this.col, this.colors);
+      this.gameMap = this.putCellsIntoMap(this.rowCount, this.colCount, this.colors);
 
       this.$apply();
       this.$emit('game.start');
@@ -227,7 +258,7 @@
       for (let i = 0; i < row; i++) {
         const row = [];
         for (let j = 0; j < col; j++) {
-          const index = getRandomNumber(cells.length);
+          const index = randomNum(cells.length);
           const cellObj = this.generateCellObj(j, i, cells[index]);
           this.cellData[cellObj.key] = cellObj;
           row.push(cellObj);
@@ -243,6 +274,7 @@
         y,
         key: `${x}.${y}.${value}`,
         value,
+        lightBorder: new Color(value).lightness(85, true).saturation(20).toString(),
         status: ''
       };
       return obj;

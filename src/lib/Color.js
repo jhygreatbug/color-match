@@ -8,6 +8,21 @@ const hexMatchReg = /[0-9a-f]{2}/g;
 const hexToDecimal = hex => parseInt(hex, 16);
 const decimalToHex = decimal => decimal.toString(16);
 
+function leftPad(value, count, str = ' ') {
+  value = `${value}`;
+  str = `${str}` || ' ';
+  const needLen = Math.max(count - value.length, 0);
+  let leftStr = str;
+  let len = str.length;
+  let rest = needLen;
+  while (needLen > leftStr.length) leftStr = (leftStr + leftStr).slice(0, needLen);
+  return leftStr.slice(0, needLen) + value;
+}
+
+function randomNum(a, b = 0) {
+  return Math.random() * (b - a) + a;
+}
+
 function addVector(v1, v2) {
   return v1.map((item, index) => v1[index] + v2[index]);
 }
@@ -80,7 +95,7 @@ class Color {
   value = []
   alpha = 1
   mode = ''
-  constructor(value, mode) {
+  constructor(value, mode = 'rgb') {
     if (value instanceof Color) {
       this.value = value.value;
       this.alpha = value.alpha;
@@ -137,7 +152,10 @@ class Color {
     }
   }
   toHexString() {
-    return this.value.map(n => decimalToHex(Math.round(n))).join('');
+    return '#' + this.value.map(n => leftPad(decimalToHex(Math.round(n)), 2, '0')).join('');
+  }
+  static random() {
+    return new Color([randomNum(RgbRightBondary), randomNum(RgbRightBondary), randomNum(RgbRightBondary)], 'rgb');
   }
   static interpolation(startColor, endColor, count) {
     if (!(startColor instanceof Color) ||
@@ -174,30 +192,30 @@ class Color {
     const lineTails = Color.interpolation(topRightColor.toRgb(), bottomRightColor.toRgb(), height);
     return lineHeads.map((item, index) => Color.interpolation(lineHeads[index], lineTails[index], width));
   }
-  hue(num) {
+  hue(num, absolute = false) {
     const value = this.mode.indexOf('hsl') >= 0 ? this.value.concat([]) : rgbToHsl(...this.value);
     let mode = 'hsl';
-    value[0] += num;
+    value[0] = absolute ? num : value[0] + num;
     if (this.alpha !== 1) {
       mode = 'hsla';
       value[3] = this.alpha;
     }
     return new Color(value, mode);
   }
-  saturation(num) {
+  saturation(num, absolute = false) {
     const value = this.mode.indexOf('hsl') >= 0 ? this.value.concat([]) : rgbToHsl(...this.value);
     let mode = 'hsl';
-    value[1] += num;
+    value[1] = absolute ? num : value[1] + num;
     if (this.alpha !== 1) {
       mode = 'hsla';
       value[3] = this.alpha;
     }
     return new Color(value, mode);
   }
-  lightness(num) {
+  lightness(num, absolute = false) {
     const value = this.mode.indexOf('hsl') >= 0 ? this.value.concat([]) : rgbToHsl(...this.value);
     let mode = 'hsl';
-    value[2] += num;
+    value[2] = absolute ? num : value[2] + num;
     if (this.alpha !== 1) {
       mode = 'hsla';
       value[3] = this.alpha;

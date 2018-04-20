@@ -1,8 +1,42 @@
 <style>
+  .levels {
+    width: 480rpx;
+    margin: 0 auto;
+    margin-top: 60rpx;
+  }
+  .level-item {
+    display: flex;
+    padding: 18rpx 30rpx;
+    margin-bottom: 40rpx;
+    background-color: #ccc;
+    font-size: 32rpx;
+    line-height: 40rpx;
+    align-items: center;
+  }
+  .level-title {
+    flex: auto;
+  }
+  .level-perfect {
+    flex: none;
+    width: 40rpx;
+    height: 40rpx;
+    background-color: yellow;
+  }
+  .level-speed {
+    flex: none;
+    width: 40rpx;
+    height: 40rpx;
+    background-color: blue;
+  }
 </style>
 <template>
-  <view class="round_title">{{roundInfo.name}}</view>
-  <navigator wx:for="{{levelInfo}}" wx:for-item="level" url="/pages/round-game?mode={{mode}}&level={{level.name}}">Level {{level.name}} {{level.perfect ? 'perfect' : ''}} {{level.speedRush ? 'speedRush' : ''}}</navigator>
+  <view class="levels">
+    <navigator class="level-item" wx:for="{{levelInfo}}" wx:for-item="level" url="/pages/round-game?mode={{mode}}&level={{level.name}}">
+      <view class="level-title">Level {{level.name}}</view>
+      <view class="level-perfect" v-if="level.perfect"></view>
+      <view class="level-speed" v-if="level.speedRush"></view>
+    </navigator>
+  </view>
 </template>
 
 <script>
@@ -15,7 +49,7 @@
       backgroundColorTop: '#0b0218',
       backgroundColorBottom: '#0b0218',
       navigationBarBackgroundColor: '#0b0218',
-      navigationBarTitleText: '★☆',
+      navigationBarTitleText: '',
       navigationBarTextStyle: 'white'
     }
     components = {
@@ -39,6 +73,7 @@
     onLoad(param) {
       this.mode = param.mode;
       this.roundConfig = Config.roundInfo[param.mode];
+      wepy.setNavigationBarTitle({ title: this.roundConfig.name });
     }
 
     onShow() {
