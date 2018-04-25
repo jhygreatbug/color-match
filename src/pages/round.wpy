@@ -1,40 +1,71 @@
-<style>
+<style lang="postcss">
   .levels {
     width: 480rpx;
     margin: 0 auto;
     margin-top: 60rpx;
   }
   .level-item {
+    transition: transform 200ms ease;
+    transform: scale(1);
+  }
+  .level-item-hover {
+    transform: scale(1.1);
+  }
+  .level-item-con {
     display: flex;
-    padding: 18rpx 30rpx;
-    margin-bottom: 40rpx;
+    height: 100%;
+    padding: 20rpx;
+    margin-bottom: 36rpx;
+    border-radius: 12rpx;
     background-color: #ccc;
+    color: rgba(255, 255, 255, .6);
     font-size: 32rpx;
     line-height: 40rpx;
     align-items: center;
+    transition: transform 400ms ease;
+    transform: rotateX(0) translate3d(0, 0, 0);
+    transform-origin: top;
+  }
+  .levels-hide .level-item-con {
+    transform: rotateX(90deg) translate3d(0, 50rpx, 0);
   }
   .level-title {
     flex: auto;
   }
-  .level-perfect {
-    flex: none;
-    width: 40rpx;
-    height: 40rpx;
-    background-color: yellow;
-  }
+  .level-perfect,
   .level-speed {
     flex: none;
-    width: 40rpx;
-    height: 40rpx;
-    background-color: blue;
+    width: 26rpx;
+    height: 26rpx;
+    background-position: center;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    opacity: 0.6;
+  }
+  .level-perfect {
+    margin-right: 14rpx;
+    background-image: svg-load('star.svg', fill=#fff);
+  }
+  .level-speed {
+    background-image: svg-load('time.svg', fill=#fff);
   }
 </style>
 <template>
-  <view class="levels">
-    <navigator class="level-item" wx:for="{{levelInfo}}" wx:for-item="level" url="/pages/round-game?mode={{mode}}&level={{level.name}}">
-      <view class="level-title">Level {{level.name}}</view>
-      <view class="level-perfect" v-if="level.perfect"></view>
-      <view class="level-speed" v-if="level.speedRush"></view>
+  <view class="levels {{showPage ? '' : 'levels-hide'}}">
+    <navigator
+      class="level-item"
+      wx:for="{{levelInfo}}" wx:for-item="level" wx:key="key"
+      url="/pages/round-game?mode={{mode}}&level={{level.name}}"
+      hover-class="level-item-hover"
+      hover-start-time="0"
+      hover-stay-time="0">
+      <view
+        class="level-item-con"
+        style="{{'background-image: linear-gradient(to right, ' + levelStartColors[index] + ', ' + levelEndColors[index] + ');background-image: -webkit-linear-gradient(to right,' + levelStartColors[index] + ', ' + levelEndColors[index] + '); transition-delay: ' + index * 80 + 'ms;'}}">
+        <view class="level-title">Level {{level.name}}</view>
+        <view class="level-perfect" wx:if="{{level.perfect}}"></view>
+        <view class="level-speed" wx:if="{{level.speedRush}}"></view>
+      </view>
     </navigator>
   </view>
 </template>
@@ -42,6 +73,8 @@
 <script>
   import wepy from 'wepy';
   import Config from '../config/config';
+  import Color from '../lib/Color';
+  import generateBlockColor from '../common/generateBlockColor';
   export default class Round extends wepy.page {
     config = {
       backgroundColor: '#0b0218',
@@ -57,14 +90,22 @@
 
     data = {
       mode: '',
+      showPage: false,
       roundInfo: {},
-      levelInfo: {}
+      levelInfo: {},
+      levelStartColors: [],
+      levelEndColors: []
     }
 
     computed = {
     }
 
     methods = {
+      itemBackground (index) {
+        return `
+          background-image: linear-gradient(to ${this.levelStartColors[index]}, ${this.levelEndColors[index]});
+          background-image: -webkit-linear-gradient(to ${this.levelStartColors[index]}, ${this.levelEndColors[index]});`;
+      }
     }
 
     events = {
@@ -74,6 +115,14 @@
       this.mode = param.mode;
       this.roundConfig = Config.roundInfo[param.mode];
       wepy.setNavigationBarTitle({ title: this.roundConfig.name });
+
+      // 生成颜色
+      const colorCount = this.roundConfig.count;
+      const topLeftColor = new Color(this.roundConfig.color);
+      const {topRightColor, bottomLeftColor, bottomRightColor} = generateBlockColor(topLeftColor);
+      this.levelStartColors = Color.interpolation(topLeftColor, bottomLeftColor, colorCount).map(item => item.toHexString());
+      this.levelEndColors = Color.interpolation(topRightColor, bottomRightColor, colorCount).map(item => item.toHexString());
+      console.log(colorCount, this.levelStartColors, this.levelEndColors)
     }
 
     onShow() {
@@ -100,6 +149,15 @@
         level = levelConfig[levelKey];
       }
       this.levelInfo = levelInfo;
+
+      setTimeout(_ => {
+        this.showPage = true;
+        this.$apply();
+      }, 300);
+    }
+
+    onHide() {
+      this.showPage = false;
     }
   }
 </script>

@@ -85,7 +85,7 @@
   <view class="home-section" wx:if="{{showPage}}">
     <repeat wx:for="{{round}}" wx:for-item="mode" wx:key="key">
       <c-simple type="progress" :progress="roundInfo[mode].progress" :colors.sync="colors[mode]" :delay="150 * index" :show.sync="showSection">
-        <navigator slot="progress" url="/pages/round?mode={{mode}}" class="home-card {{showSection ? '' : 'home-card-hide'}}">
+        <navigator slot="progress" url="/pages/round?mode={{mode}}" class="home-card {{showSection ? '' : 'home-card-hide'}}" hover-class="none">
           <view class="home-card-content">{{roundConfig[mode].name}}</view>
           <view wx:if="{{roundInfo[mode].perfect}}" class="home-card-perfect" style="transition-delay: {{200 * index + 600}}ms"></view>
           <view wx:if="{{roundInfo[mode].speedRush}}" class="home-card-speed" style="transition-delay: {{200 * index + 700}}ms"></view>

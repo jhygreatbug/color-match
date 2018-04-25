@@ -18,31 +18,130 @@
     left: 0;
     right: 0;
     margin: 0 auto;
-    max-width: 400rpx;
+  }
+
+  .game-box-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: nowrap;
+  }
+/*   .game-start .game-box-row {
+    transform: rotateX(0) translate3d(0, 0, 0);
+    transform-origin: top center;
+    animation: fall 400ms ease;
+  }
+
+  @keyframes fall {
+    from {
+      transform: rotateX(90deg) translate3d(0, 50rpx, 0);
+    }
+    to {
+      transform: rotateX(0) translate3d(0, 0, 0);
+    }
+  } */
+
+  .game-box-cell-wrap {
+    position: relative;
+    height: 100%;
+    margin: 8rpx;
+    /* transition: transform 200ms ease;
+    transform: scale(1); */
+  }
+  .game-box-col2 .game-box-cell-wrap {
+    width: 140rpx;
+    height: 140rpx;
+  }
+  .game-box-col3 .game-box-cell-wrap {
+    width: 120rpx;
+    height: 120rpx;
+  }
+  .game-box-col4 .game-box-cell-wrap,
+  .game-box-col5 .game-box-cell-wrap {
+    width: 110rpx;
+    height: 110rpx;
+  }
+
+  .game-box-cell {
+    box-sizing: border-box;
+    height: 100%;
+    border-radius: 12%;
+    background-color: currentColor;
+    transform: scale(0);
+    transition: none;
+  }
+  .game-start .game-box-cell {
+    transform: scale(1);
+    transition: transform 200ms ease;
+  }
+  .game-box-col2 .game-box-cell {
+    border-width: 12rpx;
+  }
+  .game-box-col3 .game-box-cell {
+    border-width: 10rpx;
+  }
+  .game-box-cell.game-box-cell-hover {
+    transform: scale(1.1);
+  }
+  .game-box-cell.game-box-cell-remove {
+    transition: transform 200ms ease;
+    transform: scale(0);
+  }
+  .game-box-cell.game-box-cell-selected {
+    border: 8rpx solid rgba(255, 255, 255, .7);
+  }
+  .game-box-cell-error {
+  }
+
+  .game-box-cell-dot {
+    content: '';
+    position: absolute;
+    left: 35%;
+    top: 35%;
+    display: block;
+    width: 30%;
+    height: 30%;
+    border-radius: 35%;
+    background-color: #666;
+    transform: scale(1);
+    transition: none;
+  }
+  .game-complete .game-box-cell-dot {
+    transform: scale(0);
+  }
+  .game-start .game-box-cell-dot {
+    transition: transform 500ms cubic-bezier(.4,-0.4,.4,.8);
   }
 
   .refer-box {
-    padding: 40rpx 0;
+    padding: 40rpx;
   }
 
-  .game-box-row,
   .refer-box-row {
     display: flex;
     justify-content: center;
     flex-wrap: nowrap;
   }
 
-  .game-box-cell,
-  .refer-box-cell {
-    box-sizing: border-box;
-    margin: 8rpx;
-    border-radius: 12%;
-    transition: transform 200ms ease;
-    transform: scale(1);
-  }
-
   .refer-box-cell {
     flex: 1;
+    max-width: 96rpx;
+    margin: 8rpx;
+    border-radius: 12%;
+    transform: scale(0);
+    transition: none;
+  }
+  .game-start .refer-box-cell {
+    transform: scale(1);
+    transition: transform 300ms ease-out;
+  }
+  .refer-size2 .refer-box-cell {
+    max-width: 84rpx;
+  }
+  .refer-size3 .refer-box-cell {
+    max-width: 72rpx;
+  }
+  .refer-size4 .refer-box-cell {
+    max-width: 64rpx;
   }
   .refer-box-cell:before {
     display: block;
@@ -51,76 +150,40 @@
     height: 0;
     text-align: center;
   }
-
-  .game-box-cell {
-    width: 100rpx;
-    height: 100rpx;
-  }
-
-  .game-box-col2 .game-box-cell {
-    width: 150rpx;
-    height: 150rpx;
-  }
-  .game-box-col3 .game-box-cell {
-    width: 120rpx;
-    height: 120rpx;
-  }
-
-  .refer-box-cell {
-    max-width: 90rpx;
-    min-width: 50rpx;
-  }
-
-  .game-box-cell.active {
-    transform: scale(1.1);
-  }
-
-  .game-box-cell-remove {
-    transform: scale(0);
-  }
-
-  .game-box-cell-selected {
-    color: rgba(255, 255, 255, .7);
-    border: 8rpx solid currentColor;
-  }
-
-  .game-box-cell-error:before {
-    color: #ff685d;
-    border: 8rpx solid currentColor;
-  }
-
 </style>
 
 <template>
-  <view class="game-box-wrap">
+  <view class="game-box-wrap {{complete ? 'game-complete' : ''}} {{start ? 'game-start' : ''}}">
     <view class="game-box">
       <view class="game-box-con">
-        <view wx:for="{{gameMap}}" wx:for-item="row" wx:for-index="i" class="game-box-row game-box-col{{colCount}}">
-          <view wx:for="{{row}}" wx:for-item="cell" wx:key="key"
-            class="game-box-cell {{cell.status !== '' ? 'game-box-cell-' + cell.status : ''}}"
-            hover-class="active"
-            hover-start-time="0"
-            hover-stay-time="0"
-            @tap.stop="tapCell({{cell}})"
-            style="background-color: {{cell.value}}; color: {{cell.lightBorder}}">
+        <view class="game-box-row game-box-col{{colCount}}" wx:for="{{gameMap}}" wx:for-item="row" wx:for-index="i" wx:key="i">
+          <view class="game-box-cell-wrap"
+            wx:for="{{row}}" wx:for-item="cell" wx:for-index="j" wx:key="j"
+            @tap.stop="tapCell({{cell}})">
+            <view class="game-box-cell-dot" style="transition-delay: {{i * 20 + j * 50}}ms"></view>
+            <view
+              class="game-box-cell {{cell.status !== '' ? 'game-box-cell-' + cell.status : ''}}"
+              style="color: {{cell.value}}; border-color: {{cell.lightBorder}}; transition-delay: {{cell.status === 'remove' ? 0 : i * 20 + j * 50}}ms"
+              hover-class="game-box-cell-hover"
+              hover-start-time="0"
+              hover-stay-time="0">
+            </view>
           </view>
         </view>
       </view>
     </view>
-
-    <scroll-view scroll-x="true" class="refer-box">
-      <view class="refer-box-row">
-        <view wx:for="{{colors}}" class="refer-box-cell" style="background-color: {{item}}">
+    <view class="refer-box refer-size{{referColorSize}} {{start ? 'game-start' : ''}}">
+      <view class="refer-box-row" wx:for="{{referColors}}" wx:for-item="colorRow" wx:key="i">
+        <view class="refer-box-cell" wx:for="{{colorRow}}" wx:for-index="j" wx:key="j" style="background-color: {{item}}; transition-delay: {{(j < (colorRow.length - 1) / 2 ? (colorRow.length - 1) / 2 - j : j - (colorRow.length - 1) / 2) * 60}}ms">
         </view>
       </view>
-    </scroll-view>
+    </view>
   </view>
 </template>
 
 <script>
   import wepy from 'wepy';
   import Color from '../lib/Color';
-  const RGBMaxValue = 255;
   const typeOf = obj => Object.prototype.toString.call(obj).slice(8).slice(0, -1);
   function inRange(n, a, b) {
     return a <= n && n <= b;
@@ -128,19 +191,25 @@
   function randomNum(a, b = 0) {
     return parseInt(Math.random() * (b - a) + a, 10);
   }
-  function generateEndPoint(startPoint, len) {
+  function calcLen(a, b) {
+    return Math.sqrt(a.reduce((r, v, i) => r + Math.pow(a[i] - b[i], 2), 0));
+  }
+  function generatePoint(similar) {
+    const len = similar / 2;
+    const startPoint = [randomNum(360), randomNum(35, 100), randomNum(35, 100)];
     const angle1 = Math.random() * 2 * Math.PI;
     const angle2 = Math.random() * 2 * Math.PI;
-    const x = startPoint[0] + len * Math.cos(angle1);
+    const x = startPoint[0] / 0.7 + len * Math.cos(angle1);
     const _len = len * Math.sin(angle1);
     const y = startPoint[1] + _len * Math.cos(angle2);
     const z = startPoint[2] + _len * Math.sin(angle2);
-    return inRange(x, 0, RGBMaxValue) && inRange(y, 0, 100) && inRange(z, 0, 100) ? [x, y, z] : generateEndPoint(startPoint, len);
+    console.log(len, calcLen(startPoint, [x * 0.7, y, z]), angle1 / 2 / Math.PI * 360 % 90, angle2 / 2 / Math.PI * 360 % 90);
+    return inRange(y, 30, 100) && inRange(z, 25, 75) ? [startPoint, [x * 0.7, y, z]] : generatePoint(similar);
   }
   function generateColorPoints(count, similar) {
-    const startPoint = [randomNum(RGBMaxValue), randomNum(25, 75), randomNum(25, 75)];
-    const endPoint = generateEndPoint(startPoint, similar);
-    const colors = Color.interpolation(new Color(startPoint), new Color(endPoint), count);
+    const [startPoint, endPoint] = generatePoint(similar);
+    const colors = Color.interpolation(new Color(startPoint, 'hsl'), new Color(endPoint, 'hsl'), count);
+    console.log(startPoint, endPoint, colors.map(item => item.toString()));
     return colors.map(item => item.toHexString());
   }
   export default class GameCell extends wepy.component {
@@ -151,36 +220,42 @@
       rowCount: 0,
       colCount: 0,
       colors: [],
+      referColors: [],
+      referColorSize: 1,
       restCouple: 0,
-      selectedCellKey: ''
+      selectedCell: null,
+      complete: true,
+      start: false
     }
     methods = {
       tapCell (cell) {
         const tapCell = this.gameMap[cell.y][cell.x];
-        const selectedCellKey = this.selectedCellKey;
-        const selectedCellData = selectedCellKey === '' ? null : this.cellData[this.selectedCellKey];
-        const selectedCell = selectedCellKey === '' ? null : this.gameMap[selectedCellData.y][selectedCellData.x];
+        const selectedCell = this.selectedCell;
         if (tapCell.status === 'remove') {
-          if (selectedCellKey !== '') {
+          if (selectedCell !== null) {
             // 取消选中
             selectedCell.status = '';
-            this.selectedCellKey = '';
+            this.gameMap[selectedCell.y][selectedCell.x] = selectedCell;
+            this.selectedCell = null;
           }
         } else if (tapCell.status === 'selected') {
           // 取消当前cell选中
-          this.cancelSelectCell(tapCell);
+          this.cancelSelectCell();
         } else {
-          if (this.selectedCellKey === '') {
+          if (this.selectedCell === null) {
             // 选中当前cell
             tapCell.status = 'selected';
-            this.selectedCellKey = tapCell.key;
+            this.gameMap[tapCell.y][tapCell.x] = tapCell;
+            this.selectedCell = tapCell;
           } else {
             const result = this.matchCouple(tapCell, selectedCell);
             if (result) {
               // 移除cell
               tapCell.status = 'remove';
               selectedCell.status = 'remove';
-              this.selectedCellKey = '';
+              this.gameMap[tapCell.y][tapCell.x] = tapCell;
+              this.gameMap[selectedCell.y][selectedCell.x] = selectedCell;
+              this.selectedCell = null;
               this.$emit('game.match_couple');
               this.restCouple -= 1;
               if (this.restCouple === 0) {
@@ -189,7 +264,8 @@
             } else {
               // 取消选中
               selectedCell.status = '';
-              this.selectedCellKey = '';
+              this.gameMap[selectedCell.y][selectedCell.x] = selectedCell;
+              this.selectedCell = null;
               this.$emit('game.match_error');
             }
           }
@@ -200,8 +276,15 @@
     }
     init (gameConfig) {
       // 数据重置
-      this.selectedCellKey = '';
+      this.selectedCell = null;
       this.cellData = {};
+      this.start = false;
+      this.complete = true;
+      setTimeout(_ => {
+        this.start = true;
+        this.complete = false;
+        this.$apply();
+      }, 200);
 
       // 参数初始化
       this.config = gameConfig;
@@ -219,28 +302,42 @@
       }
       this.restCouple = this.colors.length;
 
+      // 格式化参考颜色
+      const referRow = this.colors.length >= 8 ? 2 : 1;
+      const referCol = this.colors.length / referRow;
+      const referColors = [this.colors.slice(0, referCol)];
+      if (referRow === 2) {
+        referColors.push(this.colors.slice(referCol));
+      }
+      this.referColors = referColors;
+      if (referCol <= 4) {
+        this.referColorSize = 1;
+      } else if (referCol <= 6) {
+        this.referColorSize = 2;
+      } else {
+        this.referColorSize = 3;
+      }
+      if (referColors.length > 1) {
+        this.referColorSize ++;
+      }
+
       // 生成map
       this.gameMap = this.putCellsIntoMap(this.rowCount, this.colCount, this.colors);
 
       this.$apply();
       this.$emit('game.start');
-
-      console.log(this.colors);
     }
-    cancelSelectCell (tapCell) {
-      this.selectedCellKey = '';
-      if (typeof tapCell === 'object') {
-        tapCell.status = '';
-      } else {
-        this.gameMap.forEach(row => {
-          row.forEach(cell => {
-            if (cell.status === 'selected') {
-              cell.status = '';
-              this.$apply();
-            }
-          });
-        });
-      }
+    showComplete (gameRecord) {
+      this.complete = true;
+      console.log('showComplete', gameRecord);
+    }
+    cancelSelectCell () {
+      const selectedCell = this.selectedCell;
+      if (selectedCell === null) return;
+      selectedCell.status = '';
+      this.gameMap[selectedCell.y][selectedCell.x] = selectedCell;
+      this.selectedCell = null;
+      this.$apply();
     }
     matchCouple (tapCell, selectedCell) {
       return tapCell.value === selectedCell.value;
@@ -272,9 +369,10 @@
       const obj = {
         x,
         y,
-        key: `${x}.${y}.${value}`,
+        key: `${value}`,
         value,
-        lightBorder: new Color(value).lightness(85, true).saturation(20).toString(),
+        remove: false,
+        lightBorder: new Color(value).lightness(85, true).saturation(90, true).toString(),
         status: ''
       };
       return obj;

@@ -2,6 +2,11 @@
   .c-wrapper {
     position: relative;
     padding-bottom: 100%;
+    transition: transform 200ms ease;
+    transform: scale(1);
+  }
+  .c-wrapper-hover {
+    transform: scale(1.1);
   }
   .c-bg {
     position: absolute;
@@ -11,6 +16,15 @@
   }
   .c-content {
     position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .c-simple,
+  .c-progress {
+    position: absolute;
+    left: 0;
     top: 0;
     width: 100%;
     height: 100%;
@@ -37,7 +51,7 @@
     opacity: 0;
   }
 
-  .c-progress.c-wrapper {
+  .c-progress {
     transition: transform 600ms cubic-bezier(.54,-0.33,.59,.82);
     transform: translate3d(0, 0, 0);
   }
@@ -89,7 +103,8 @@
 </style>
 
 <template>
-  <view class="c-wrapper c-{{type}} {{show ? '' : 'c-hide'}}" style="transition-delay: {{delay}}ms">
+<view class="c-wrapper" hover-class="c-wrapper-hover" hover-start-time="0" hover-stay-time="0">
+  <view class="c-{{type}} {{show ? '' : 'c-hide'}}" style="transition-delay: {{delay}}ms">
     <block wx:if="{{type === 'simple'}}">
       <view class="c-bg" style="background-color: {{color}}; transition-delay: {{delay}}ms"></view>
       <view class="c-content" style="transition-delay: {{delay + 300}}ms">
@@ -107,6 +122,7 @@
       </view>
     </block>
   </view>
+</view>
 </template>
 
 <script>

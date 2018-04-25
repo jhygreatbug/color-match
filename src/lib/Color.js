@@ -97,7 +97,7 @@ class Color {
   mode = ''
   constructor(value, mode = 'rgb') {
     if (value instanceof Color) {
-      this.value = value.value;
+      this.value = value.value.concat([]);
       this.alpha = value.alpha;
       this.mode = value.mode;
     }
@@ -141,9 +141,9 @@ class Color {
     const value = this.value;
     switch (this.mode) {
       case 'hsl':
-        return `hsl(${value[0]}, ${Math.round(value[1])}%, ${Math.round(value[2])}%)`;
+        return `hsl(${Math.round(value[0])}, ${Math.round(value[1])}%, ${Math.round(value[2])}%)`;
       case 'hsla':
-        return `hsla(${value[0]}, ${Math.round(value[1])}%, ${Math.round(value[2])}%, ${this.alpha})`;
+        return `hsla(${Math.round(value[0])}, ${Math.round(value[1])}%, ${Math.round(value[2])}%, ${this.alpha})`;
       case 'rgb':
         return `rgb(${value.map(n => Math.round(n)).join(', ')})`;
       case 'rgba':
@@ -152,7 +152,11 @@ class Color {
     }
   }
   toHexString() {
-    return '#' + this.value.map(n => leftPad(decimalToHex(Math.round(n)), 2, '0')).join('');
+    let value = this.value;
+    if (this.mode.indexOf('hsl') >= 0) {
+      value = hslToRgb(...value);
+    }
+    return '#' + value.map(n => leftPad(decimalToHex(Math.round(n)), 2, '0')).join('');
   }
   static random() {
     return new Color([randomNum(RgbRightBondary), randomNum(RgbRightBondary), randomNum(RgbRightBondary)], 'rgb');
@@ -164,13 +168,14 @@ class Color {
       throw new TypeError();
     }
     if (count === 0) return [];
-    const start = startColor.toRgb();
+    const hslMode = startColor.mode.indexOf('hsl') >= 0 && endColor.mode.indexOf('hsl') >= 0;
+    const start = hslMode ? new Color(startColor) : startColor.toRgb();
     if (count === 1) return [start];
-    const end = endColor.toRgb();
+    const end = hslMode ? new Color(endColor) : endColor.toRgb();
     const step = divisionVector(subtractVector(end.value, start.value), count - 1);
     const colors = [start];
     for (let i = 1; i <= count - 2; i++) {
-      const cellColor = new Color(addVector(colors[colors.length - 1].value, step), 'rgb');
+      const cellColor = new Color(addVector(colors[colors.length - 1].value, step), hslMode ? 'hsl' : 'rgb');
       colors.push(cellColor);
     }
     colors.push(end);

@@ -1,4 +1,7 @@
 <style lang="postcss">
+page {
+  height: 100%;
+}
 .game-wrap {
   display: flex;
   flex-direction: column;
@@ -187,21 +190,20 @@
           gameRecord = wepy.getStorageSync(key) || {};
         } catch (e) {}
         const thisRecord = gameRecord[this.level] || {};
-        thisRecord.perfect = thisRecord.perfect || this.punishmentTime === 0;
-        thisRecord.shortestTime = Math.min(thisRecord.shortestTime || Number.MAX_SAFE_INTEGER, this.gameTime);
-        thisRecord.speedRush = thisRecord.speedRush || this.gameTime <= gameConfig.limitTime;
+        const perfect = this.punishmentTime === 0;
+        const time = this.gameTime;
+        const shortestTime = Math.min(thisRecord.shortestTime || Number.MAX_SAFE_INTEGER, time);
+        const speedRush = time <= gameConfig.limitTime;
+        thisRecord.perfect = thisRecord.perfect || perfect;
+        thisRecord.shortestTime = shortestTime;
+        thisRecord.speedRush = thisRecord.speedRush || speedRush;
         gameRecord[this.level] = thisRecord;
         try {
           wepy.setStorageSync(key, gameRecord);
         } catch (e) {}
 
-        this.gameTime = 0;
-
-        if (this.nextLevel) {
-          this.next();
-        } else {
-          wepy.navigateBack({delta: 1});
-        }
+        this.$invoke('game-box', 'showComplete', { perfect, time, shortestTime, speedRush });
+        clearInterval(this.timer);
       },
       'game.match_error' () {
         this.punishmentTime++;
@@ -230,6 +232,7 @@
       } catch (e) {}
 
       // 重置参数
+      this.gameTime = 0;
       this.punishmentTime = 0;
       this.startTimestamp = this.currentTimestamp = new Date().getTime();
       clearInterval(this.timer);
@@ -257,6 +260,10 @@
         return;
       }
       this.level = this.prevLevel;
+      this.init();
+    }
+
+    restart() {
       this.init();
     }
   }
