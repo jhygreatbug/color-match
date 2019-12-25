@@ -1,2 +1,5 @@
-# lianliankan
-微信小程序-连连看
+微信小程序 - color match
+
+预览：
+
+![image](https://github.com/jhygreatbug/color-match/tree/master/images/nongshalie.jpg)
