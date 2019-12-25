@@ -2,4 +2,4 @@
 
 预览：
 
-![image](https://github.com/jhygreatbug/color-match/tree/master/images/preview.gif)
+![image](https://github.com/jhygreatbug/color-match/raw/master/images/preview.gif)
